@@ -62,6 +62,19 @@ export const nextConfig = tseslint.config(
       'no-restricted-properties': 'off',
     },
   },
+  {
+    /*
+     * The end-to-end harness starts the servers it tests, so it is the thing
+     * that *supplies* the environment rather than a consumer of the validated
+     * one — the same position `env.ts` occupies. It also runs in Node, outside
+     * the bundle, so the `@/` alias the rule points at does not resolve there.
+     */
+    files: ['**/playwright.config.ts', '**/e2e/**/*.ts', '**/next.config.ts'],
+    rules: {
+      'no-restricted-properties': 'off',
+      'no-restricted-imports': 'off',
+    },
+  },
 );
 
 export default nextConfig;

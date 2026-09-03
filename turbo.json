@@ -6,6 +6,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": ["NEXT_DIST_DIR", "NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_APP_URL"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "dev": {
@@ -35,8 +36,9 @@
       "persistent": true
     },
     "test:e2e": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "build"],
       "cache": false,
+      "env": ["E2E_WEB_PORT", "E2E_API_PORT", "E2E_API_URL", "E2E_MONGODB_URI", "NEXT_DIST_DIR"],
       "outputs": ["playwright-report/**", "test-results/**"]
     },
     "clean": {

@@ -18,6 +18,13 @@ if (existsSync(rootEnvPath)) {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  /*
+   * `NEXT_PUBLIC_*` values are inlined at build time, so the end-to-end suite
+   * has to build the app against its own API URL. It does that into a separate
+   * directory: sharing `.next` would leave a developer's next `pnpm start`
+   * quietly pointing at the throwaway test API.
+   */
+  distDir: process.env.NEXT_DIST_DIR ?? '.next',
   // Never set `ignoreBuildErrors: true`. Type errors are also caught by
   // `pnpm typecheck` in CI, but the build must refuse to produce output from
   // code that does not compile. Next 16 no longer runs ESLint during builds;

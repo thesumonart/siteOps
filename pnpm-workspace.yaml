@@ -38,6 +38,7 @@ catalog:
   # Testing
   vitest: 4.1.11
   "@vitest/coverage-v8": 4.1.11
+  "@playwright/test": 1.62.1
 
 # Dependencies permitted to run install scripts (pnpm >= 11). Everything else
 # is blocked, so a transitive package cannot execute code during `pnpm install`.
