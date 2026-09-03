@@ -1,9 +1,12 @@
 import { connectToDatabase, disconnectFromDatabase } from '@siteops/database';
+import { MAX_REQUEST_TIMEOUT_MS } from '@siteops/shared';
 import type { Server } from 'node:http';
 
 import { env } from './config/env.js';
+import { EmailService } from './email/email.service.js';
 import { startHealthServer } from './health/server.js';
 import { createLogger, logger } from './logging/logger.js';
+import { SchedulerLoop } from './monitoring/scheduler-loop.js';
 
 const log = createLogger('bootstrap');
 
@@ -11,9 +14,9 @@ const log = createLogger('bootstrap');
  * Monitoring worker entry point.
  *
  * Owns process lifecycle only: configuration, the database connection, the
- * health surface and an orderly shutdown. The monitoring scheduler is started
- * from here once it exists, so that stopping the process always drains work in
- * progress rather than killing a check mid-flight.
+ * health surface, the scheduler loop and an orderly shutdown. Stopping the
+ * process always drains work in progress rather than killing a check
+ * mid-flight — see `SchedulerLoop.stop()`.
  */
 
 /**
@@ -24,16 +27,30 @@ const log = createLogger('bootstrap');
  */
 const SHUTDOWN_WATCHDOG_MS = 25_000;
 
+/**
+ * A lease must comfortably outlast the slowest realistic single check, or a
+ * worker still legitimately checking a slow site would have its own lease
+ * stolen out from under it (see `scheduler.ts`). Every attempt within one
+ * check can take up to the *maximum any website is allowed to configure*
+ * (`MAX_REQUEST_TIMEOUT_MS`, not just this worker's own default) times every
+ * redirect hop; the 30s on top covers the database writes and email dispatch
+ * that follow.
+ */
+const LEASE_DURATION_MS =
+  MAX_REQUEST_TIMEOUT_MS * (env.MONITOR_MAX_REDIRECTS + 1) * env.MONITOR_MAX_ATTEMPTS + 30_000;
+
+const USER_AGENT = 'SiteOpsMonitor/1.0 (+https://siteops.app)';
+
 interface RuntimeState {
   shuttingDown: boolean;
-  lastTickAt: number | null;
   healthServer: Server | null;
+  schedulerLoop: SchedulerLoop | null;
 }
 
 const state: RuntimeState = {
   shuttingDown: false,
-  lastTickAt: null,
   healthServer: null,
+  schedulerLoop: null,
 };
 
 async function shutdown(signal: string, exitCode: number): Promise<void> {
@@ -42,9 +59,10 @@ async function shutdown(signal: string, exitCode: number): Promise<void> {
   log.info({ signal }, 'worker.shutdown_started');
 
   /*
-   * Nothing below calls process.exit(). Once the health server is closed and
-   * the database pool is drained, no handles remain and Node exits on its own
-   * with the code set here — which guarantees pending writes finish first.
+   * Nothing below calls process.exit(). Once the scheduler has stopped
+   * claiming new work, the health server is closed and the database pool is
+   * drained, no handles remain and Node exits on its own with the code set
+   * here — which guarantees pending writes finish first.
    */
   process.exitCode = exitCode;
 
@@ -59,6 +77,11 @@ async function shutdown(signal: string, exitCode: number): Promise<void> {
   watchdog.unref();
 
   try {
+    // Stop claiming new work and wait for any check already in flight to
+    // finish — its own lease-release still runs even if this wait times out,
+    // since that logic lives in a `finally` block inside `check-runner.ts`.
+    await state.schedulerLoop?.stop();
+
     if (state.healthServer) {
       await new Promise<void>((resolve) => {
         state.healthServer?.close(() => {
@@ -85,10 +108,32 @@ async function bootstrap(): Promise<void> {
   });
   log.info('database.connected');
 
+  const emailService = new EmailService();
+
+  const schedulerLoop = new SchedulerLoop(
+    {
+      pollIntervalMs: env.MONITOR_POLL_INTERVAL_SECONDS * 1000,
+      scheduler: {
+        batchSize: env.MONITOR_CONCURRENCY,
+        leaseDurationMs: LEASE_DURATION_MS,
+      },
+      checkRunner: {
+        maxRedirects: env.MONITOR_MAX_REDIRECTS,
+        maxAttempts: env.MONITOR_MAX_ATTEMPTS,
+        allowLoopback: env.MONITOR_ALLOW_PRIVATE_ADDRESSES,
+        userAgent: USER_AGENT,
+      },
+    },
+    emailService,
+  );
+  state.schedulerLoop = schedulerLoop;
+
   state.healthServer = startHealthServer(env.WORKER_PORT, {
     accepting: () => !state.shuttingDown,
-    lastTickAt: () => state.lastTickAt,
+    lastTickAt: () => schedulerLoop.lastTickAt(),
   });
+
+  schedulerLoop.start();
 
   for (const signal of ['SIGTERM', 'SIGINT'] as const) {
     process.on(signal, () => {
@@ -109,6 +154,8 @@ async function bootstrap(): Promise<void> {
       environment: env.NODE_ENV,
       pollIntervalSeconds: env.MONITOR_POLL_INTERVAL_SECONDS,
       concurrency: env.MONITOR_CONCURRENCY,
+      leaseDurationMs: LEASE_DURATION_MS,
+      emailConfigured: emailService.isConfigured,
     },
     'worker.started',
   );
