@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 
+import { MonitoringDataModule } from '../monitoring/monitoring-data.module.js';
 import { WebsiteController } from './website.controller.js';
 import { WebsiteRepository } from './website.repository.js';
 import { WebsiteService } from './website.service.js';
 
 @Module({
+  imports: [MonitoringDataModule],
   controllers: [WebsiteController],
   providers: [WebsiteRepository, WebsiteService],
   exports: [WebsiteService, WebsiteRepository],

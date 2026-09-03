@@ -81,6 +81,22 @@ export class WebsiteRepository {
     return WebsiteModel.countDocuments({ organizationId }).exec();
   }
 
+  /**
+   * Website counts per status, for the overview cards.
+   *
+   * One grouped aggregation rather than a count per status: the numbers on a
+   * summary card should come from a single read, or they can disagree with
+   * each other when a check lands between two queries.
+   */
+  async countByStatus(organizationId: Types.ObjectId): Promise<ReadonlyMap<WebsiteStatus, number>> {
+    const rows = await WebsiteModel.aggregate<{ _id: WebsiteStatus; count: number }>([
+      { $match: { organizationId } },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]).exec();
+
+    return new Map(rows.map((row) => [row._id, row.count]));
+  }
+
   async create(input: {
     readonly organizationId: Types.ObjectId;
     readonly name: string;

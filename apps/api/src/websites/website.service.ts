@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { buildOffsetMeta } from '@siteops/shared';
 import {
+  calculateUptimePercentage,
   limitsFor,
   normalizeWebsiteUrl,
   type CreateWebsiteInput,
@@ -8,11 +9,14 @@ import {
   type OffsetPaginatedResult,
   type UpdateWebsiteInput,
   type WebsiteDto,
+  type WebsiteSummaryDto,
 } from '@siteops/shared';
 
 import { AuditService } from '../audit/audit.service.js';
 import { ApiException } from '../common/errors/api-exception.js';
 import { createLogger } from '../common/logging/logger.js';
+import { CheckRepository } from '../monitoring/check.repository.js';
+import { IncidentRepository } from '../monitoring/incident.repository.js';
 import { type OrganizationContext } from '../organizations/organization.types.js';
 import { WebsiteRepository, type WebsiteRecord } from './website.repository.js';
 
@@ -20,6 +24,9 @@ const logger = createLogger('websites');
 
 /** MongoDB's duplicate-key error. */
 const DUPLICATE_KEY = 11000;
+
+/** The window the website table's uptime and response-time columns cover. */
+const SUMMARY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 function isDuplicateKeyError(error: unknown): boolean {
   return (
@@ -39,13 +46,21 @@ interface Actor {
 export class WebsiteService {
   constructor(
     private readonly repository: WebsiteRepository,
+    private readonly checks: CheckRepository,
+    private readonly incidents: IncidentRepository,
     private readonly audit: AuditService,
   ) {}
 
+  /**
+   * Lists websites with the 24-hour figures the table shows beside each row.
+   *
+   * The rollups are two organization-wide reads for the whole page rather than
+   * two per row: a table of fifty sites must not become a hundred round trips.
+   */
   async list(
     organization: OrganizationContext,
     query: ListWebsitesQuery,
-  ): Promise<OffsetPaginatedResult<WebsiteDto>> {
+  ): Promise<OffsetPaginatedResult<WebsiteSummaryDto>> {
     const { items, totalItems } = await this.repository.list({
       organizationId: organization.objectId,
       page: query.page,
@@ -54,9 +69,35 @@ export class WebsiteService {
       status: query.status,
     });
 
+    const pagination = buildOffsetMeta(query.page, query.pageSize, totalItems);
+    if (items.length === 0) return { items: [], pagination };
+
+    const since = new Date(Date.now() - SUMMARY_WINDOW_MS);
+    const [totals, openIncidentIds] = await Promise.all([
+      this.checks.totalsByWebsite(organization.objectId, since),
+      this.incidents.openIncidentIdsFor(
+        organization.objectId,
+        items.map((website) => website._id),
+      ),
+    ]);
+
     return {
-      items: items.map(toWebsiteDto),
-      pagination: buildOffsetMeta(query.page, query.pageSize, totalItems),
+      items: items.map((website) => {
+        const id = website._id.toHexString();
+        const websiteTotals = totals.get(id);
+
+        return {
+          ...toWebsiteDto(website),
+          // Null, not 100%, when nothing has been measured yet. An unchecked
+          // website is not a healthy one.
+          uptimePercentage24h: websiteTotals
+            ? calculateUptimePercentage(websiteTotals.successfulChecks, websiteTotals.totalChecks)
+            : null,
+          averageResponseTimeMs24h: websiteTotals?.averageResponseTimeMs ?? null,
+          openIncidentId: openIncidentIds.get(id) ?? null,
+        };
+      }),
+      pagination,
     };
   }
 

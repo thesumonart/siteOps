@@ -3,6 +3,8 @@ import type { CreateWebsiteInput } from '@siteops/shared';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ApiException } from '../common/errors/api-exception.js';
+import type { CheckRepository } from '../monitoring/check.repository.js';
+import type { IncidentRepository } from '../monitoring/incident.repository.js';
 import type { OrganizationContext } from '../organizations/organization.types.js';
 import type { WebsiteRecord, WebsiteRepository } from './website.repository.js';
 import { WebsiteService } from './website.service.js';
@@ -71,8 +73,17 @@ function buildService(
     list: vi.fn(),
   } as unknown as WebsiteRepository;
 
+  // The list rollups are the only thing these two are used for, and no test
+  // here exercises `list()` — an empty page short-circuits before touching them.
+  const checks = {
+    totalsByWebsite: vi.fn().mockResolvedValue(new Map()),
+  } as unknown as CheckRepository;
+  const incidents = {
+    openIncidentIdsFor: vi.fn().mockResolvedValue(new Map()),
+  } as unknown as IncidentRepository;
+
   const audit = { record: vi.fn().mockResolvedValue(undefined) };
-  const service = new WebsiteService(repository, audit);
+  const service = new WebsiteService(repository, checks, incidents, audit);
 
   return { service, repository };
 }

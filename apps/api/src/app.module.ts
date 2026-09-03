@@ -11,6 +11,7 @@ import { RateLimitGuard } from './common/rate-limit/index.js';
 import { DatabaseModule } from './database.module.js';
 import { EmailModule } from './email/email.module.js';
 import { HealthModule } from './health/health.module.js';
+import { MonitoringModule } from './monitoring/monitoring.module.js';
 import { OrganizationGuard } from './organizations/organization.guard.js';
 import { OrganizationModule } from './organizations/organization.module.js';
 import { WebsiteModule } from './websites/website.module.js';
@@ -23,6 +24,7 @@ import { WebsiteModule } from './websites/website.module.js';
     AuthModule,
     OrganizationModule,
     WebsiteModule,
+    MonitoringModule,
     HealthModule,
   ],
   providers: [
