@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { RateLimiter, type RateLimitRule } from './rate-limiter';
+import { RateLimiter, type RateLimitRule } from './rate-limiter.js';
 
 const rule: RateLimitRule = { windowMs: 60_000, limit: 3 };
 

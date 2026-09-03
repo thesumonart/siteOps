@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { cursorPaginationQuerySchema } from './common';
+import { cursorPaginationQuerySchema } from './common.js';
 
 export const notificationPreferencesSchema = z.object({
   websiteDown: z.boolean(),

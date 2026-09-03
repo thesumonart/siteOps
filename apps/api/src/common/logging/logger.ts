@@ -1,6 +1,6 @@
 import { pino, type Logger } from 'pino';
 
-import { env, isProduction, isTest } from '../../config/env';
+import { env, isProduction, isTest } from '../../config/env.js';
 
 /**
  * Structured application logger.

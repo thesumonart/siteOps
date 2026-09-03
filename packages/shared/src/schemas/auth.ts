@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { humanNameSchema } from './common';
+import { humanNameSchema } from './common.js';
 
 export const MIN_PASSWORD_LENGTH = 12;
 export const MAX_PASSWORD_LENGTH = 128;

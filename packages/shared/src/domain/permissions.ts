@@ -1,4 +1,4 @@
-import { type OrganizationRole } from './roles';
+import { type OrganizationRole } from './roles.js';
 
 /**
  * Every capability the API authorizes against.

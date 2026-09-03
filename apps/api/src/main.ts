@@ -7,10 +7,10 @@ import type { ApiErrorResponse } from '@siteops/shared';
 import type { Request, Response } from 'express';
 import helmet from 'helmet';
 
-import { AppModule } from './app.module';
-import { createLogger } from './common/logging/logger';
-import { DatabaseModule } from './database.module';
-import { env, isProduction, trustedOrigins } from './config/env';
+import { AppModule } from './app.module.js';
+import { createLogger } from './common/logging/logger.js';
+import { DatabaseModule } from './database.module.js';
+import { env, isProduction, trustedOrigins } from './config/env.js';
 
 const logger = createLogger('bootstrap');
 

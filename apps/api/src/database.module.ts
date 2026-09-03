@@ -1,8 +1,8 @@
 import { Global, Module, type OnApplicationShutdown } from '@nestjs/common';
 import { connectToDatabase, disconnectFromDatabase } from '@siteops/database';
 
-import { env } from './config/env';
-import { createLogger } from './common/logging/logger';
+import { env } from './config/env.js';
+import { createLogger } from './common/logging/logger.js';
 
 const logger = createLogger('database');
 

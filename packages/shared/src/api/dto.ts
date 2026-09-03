@@ -1,16 +1,16 @@
-import { type AuditAction } from '../domain/audit';
-import { type CheckErrorType, type CheckStatus } from '../domain/check';
-import { type IncidentStatus, type IncidentType } from '../domain/incident';
+import { type AuditAction } from '../domain/audit.js';
+import { type CheckErrorType, type CheckStatus } from '../domain/check.js';
+import { type IncidentStatus, type IncidentType } from '../domain/incident.js';
 import {
   type NotificationChannel,
   type NotificationEvent,
   type NotificationPreferences,
   type NotificationStatus,
-} from '../domain/notification';
-import { type Plan } from '../domain/plan';
-import { type OrganizationRole } from '../domain/roles';
-import { type Permission } from '../domain/permissions';
-import { type WebsiteStatus } from '../domain/website';
+} from '../domain/notification.js';
+import { type Plan } from '../domain/plan.js';
+import { type OrganizationRole } from '../domain/roles.js';
+import { type Permission } from '../domain/permissions.js';
+import { type WebsiteStatus } from '../domain/website.js';
 
 /**
  * Wire shapes returned by the API.

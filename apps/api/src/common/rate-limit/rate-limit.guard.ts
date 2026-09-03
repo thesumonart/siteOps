@@ -2,10 +2,10 @@ import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 
-import { env } from '../../config/env';
-import { ApiException } from '../errors/api-exception';
-import { RATE_LIMIT_KEY, type RateLimitOptions } from './rate-limit.decorator';
-import { RateLimiter, type RateLimitRule } from './rate-limiter';
+import { env } from '../../config/env.js';
+import { ApiException } from '../errors/api-exception.js';
+import { RATE_LIMIT_KEY, type RateLimitOptions } from './rate-limit.decorator.js';
+import { RateLimiter, type RateLimitRule } from './rate-limiter.js';
 
 /**
  * Applies the default rate limit to every route, and a stricter one to routes

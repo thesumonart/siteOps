@@ -1,6 +1,6 @@
 import { CHECK_ERROR_TYPES, INCIDENT_STATUSES, INCIDENT_TYPES } from '@siteops/shared';
 import type { CheckErrorType, IncidentStatus, IncidentType } from '@siteops/shared';
-import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
+import mongoose, { Schema, model, type HydratedDocument, type Model, type Types } from 'mongoose';
 
 export interface IncidentAttributes {
   organizationId: Types.ObjectId;
@@ -78,5 +78,5 @@ incidentSchema.index(
 incidentSchema.index({ websiteId: 1, startedAt: -1 }, { name: 'incident_website_started_at' });
 
 export const IncidentModel: Model<IncidentAttributes> =
-  (models.Incident as Model<IncidentAttributes> | undefined) ??
+  (mongoose.models.Incident as Model<IncidentAttributes> | undefined) ??
   model<IncidentAttributes>('Incident', incidentSchema);

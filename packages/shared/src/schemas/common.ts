@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '../api/pagination';
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '../api/pagination.js';
 
 /** A 24-character hexadecimal MongoDB ObjectId, as it appears in the API. */
 export const objectIdSchema = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Must be a valid identifier.');

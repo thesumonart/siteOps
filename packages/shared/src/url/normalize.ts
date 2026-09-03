@@ -1,4 +1,4 @@
-import { classifyIpAddress, parseIpLiteral } from './ip';
+import { classifyIpAddress, parseIpLiteral } from './ip.js';
 
 /**
  * URL normalization and string-level validation for monitored websites.

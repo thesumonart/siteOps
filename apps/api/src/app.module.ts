@@ -1,12 +1,12 @@
 import { Module, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { RequestContextMiddleware } from './common/logging/request-context.middleware';
-import { RateLimitGuard } from './common/rate-limit';
-import { DatabaseModule } from './database.module';
-import { HealthModule } from './health/health.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
+import { RequestContextMiddleware } from './common/logging/request-context.middleware.js';
+import { RateLimitGuard } from './common/rate-limit/index.js';
+import { DatabaseModule } from './database.module.js';
+import { HealthModule } from './health/health.module.js';
 
 @Module({
   imports: [DatabaseModule, HealthModule],

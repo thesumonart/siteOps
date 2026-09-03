@@ -1,4 +1,4 @@
-import mongoose, { ConnectionStates, type Connection, type Mongoose } from 'mongoose';
+import mongoose, { type Connection, type Mongoose } from 'mongoose';
 import { type Db } from 'mongodb';
 
 /**
@@ -68,7 +68,7 @@ export function getMongoDb(): Db {
 }
 
 export function isConnected(): boolean {
-  return mongoose.connection.readyState === ConnectionStates.connected;
+  return mongoose.connection.readyState === mongoose.ConnectionStates.connected;
 }
 
 export async function disconnectFromDatabase(): Promise<void> {

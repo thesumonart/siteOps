@@ -1,6 +1,6 @@
 import { CHECK_ERROR_TYPES, CHECK_STATUSES } from '@siteops/shared';
 import type { CheckErrorType, CheckStatus } from '@siteops/shared';
-import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
+import mongoose, { Schema, model, type HydratedDocument, type Model, type Types } from 'mongoose';
 
 /**
  * One monitoring request and its outcome.
@@ -71,5 +71,5 @@ websiteCheckSchema.index(
 );
 
 export const WebsiteCheckModel: Model<WebsiteCheckAttributes> =
-  (models.WebsiteCheck as Model<WebsiteCheckAttributes> | undefined) ??
+  (mongoose.models.WebsiteCheck as Model<WebsiteCheckAttributes> | undefined) ??
   model<WebsiteCheckAttributes>('WebsiteCheck', websiteCheckSchema);

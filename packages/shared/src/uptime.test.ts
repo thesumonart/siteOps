@@ -9,7 +9,7 @@ import {
   formatResponseTime,
   formatUptimePercentage,
   type CheckSample,
-} from './uptime';
+} from './uptime.js';
 
 const sample = (successful: boolean, responseTimeMs: number | null = 200): CheckSample => ({
   successful,

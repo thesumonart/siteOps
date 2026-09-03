@@ -6,7 +6,7 @@ import {
   WEBSITE_STATUSES,
 } from '@siteops/shared';
 import type { WebsiteStatus } from '@siteops/shared';
-import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
+import mongoose, { Schema, model, type HydratedDocument, type Model, type Types } from 'mongoose';
 
 export interface WebsiteAttributes {
   organizationId: Types.ObjectId;
@@ -131,5 +131,5 @@ websiteSchema.index(
 websiteSchema.index({ organizationId: 1, status: 1 }, { name: 'website_org_status' });
 
 export const WebsiteModel: Model<WebsiteAttributes> =
-  (models.Website as Model<WebsiteAttributes> | undefined) ??
+  (mongoose.models.Website as Model<WebsiteAttributes> | undefined) ??
   model<WebsiteAttributes>('Website', websiteSchema);

@@ -5,7 +5,7 @@ import {
   NOTIFICATION_STATUSES,
 } from '@siteops/shared';
 import type { NotificationChannel, NotificationEvent, NotificationStatus } from '@siteops/shared';
-import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
+import mongoose, { Schema, model, type HydratedDocument, type Model, type Types } from 'mongoose';
 
 export interface NotificationAttributes {
   organizationId: Types.ObjectId;
@@ -67,7 +67,7 @@ notificationSchema.index(
 );
 
 export const NotificationModel: Model<NotificationAttributes> =
-  (models.Notification as Model<NotificationAttributes> | undefined) ??
+  (mongoose.models.Notification as Model<NotificationAttributes> | undefined) ??
   model<NotificationAttributes>('Notification', notificationSchema);
 
 /**
@@ -111,5 +111,5 @@ notificationSettingsSchema.index(
 );
 
 export const NotificationSettingsModel: Model<NotificationSettingsAttributes> =
-  (models.NotificationSettings as Model<NotificationSettingsAttributes> | undefined) ??
+  (mongoose.models.NotificationSettings as Model<NotificationSettingsAttributes> | undefined) ??
   model<NotificationSettingsAttributes>('NotificationSettings', notificationSettingsSchema);

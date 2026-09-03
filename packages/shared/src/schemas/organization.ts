@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
-import { ORGANIZATION_ROLES } from '../domain/roles';
-import { emailSchema } from './auth';
-import { humanNameSchema } from './common';
+import { ORGANIZATION_ROLES } from '../domain/roles.js';
+import { emailSchema } from './auth.js';
+import { humanNameSchema } from './common.js';
 
 /**
  * URL-safe organization identifier. Reserved words are refused so a slug can

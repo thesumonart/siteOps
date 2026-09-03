@@ -1,4 +1,4 @@
-import { envSchema, type Env } from './env.schema';
+import { envSchema, type Env } from './env.schema.js';
 
 /**
  * The loaded, validated configuration for this process.

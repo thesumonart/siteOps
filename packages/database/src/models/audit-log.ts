@@ -1,6 +1,6 @@
 import { AUDIT_ACTIONS } from '@siteops/shared';
 import type { AuditAction } from '@siteops/shared';
-import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
+import mongoose, { Schema, model, type HydratedDocument, type Model, type Types } from 'mongoose';
 
 /**
  * Append-only record of who changed what inside an organization.
@@ -49,5 +49,5 @@ auditLogSchema.index(
 );
 
 export const AuditLogModel: Model<AuditLogAttributes> =
-  (models.AuditLog as Model<AuditLogAttributes> | undefined) ??
+  (mongoose.models.AuditLog as Model<AuditLogAttributes> | undefined) ??
   model<AuditLogAttributes>('AuditLog', auditLogSchema);

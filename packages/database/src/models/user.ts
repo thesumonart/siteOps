@@ -1,4 +1,4 @@
-import { Schema, model, models, type HydratedDocument, type Model } from 'mongoose';
+import mongoose, { Schema, model, type HydratedDocument, type Model } from 'mongoose';
 
 /**
  * Read-only projection of the account records owned by the authentication layer.
@@ -43,4 +43,5 @@ const userSchema = new Schema<UserAttributes>(
 );
 
 export const UserModel: Model<UserAttributes> =
-  (models.User as Model<UserAttributes> | undefined) ?? model<UserAttributes>('User', userSchema);
+  (mongoose.models.User as Model<UserAttributes> | undefined) ??
+  model<UserAttributes>('User', userSchema);

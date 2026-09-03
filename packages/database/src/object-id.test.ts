@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isValidObjectId, toObjectId } from './object-id';
+import { isValidObjectId, toObjectId } from './object-id.js';
 
 describe('toObjectId', () => {
   it('accepts a 24-character hex string', () => {

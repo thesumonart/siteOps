@@ -1,21 +1,21 @@
 import { z } from 'zod';
 
-import { CHECK_STATUSES } from '../domain/check';
+import { CHECK_STATUSES } from '../domain/check.js';
 import {
   DEFAULT_FAILURE_THRESHOLD,
   DEFAULT_RECOVERY_THRESHOLD,
   MAX_THRESHOLD,
   MIN_THRESHOLD,
-} from '../domain/incident';
+} from '../domain/incident.js';
 import {
   DEFAULT_MONITORING_INTERVAL_SECONDS,
   DEFAULT_REQUEST_TIMEOUT_MS,
   MAX_REQUEST_TIMEOUT_MS,
   MIN_REQUEST_TIMEOUT_MS,
   MONITORING_INTERVALS_SECONDS,
-} from '../domain/website';
-import { normalizeWebsiteUrl } from '../url/normalize';
-import { cursorPaginationQuerySchema, humanNameSchema } from './common';
+} from '../domain/website.js';
+import { normalizeWebsiteUrl } from '../url/normalize.js';
+import { cursorPaginationQuerySchema, humanNameSchema } from './common.js';
 
 /**
  * Validates and normalizes a monitored URL in one step, so every layer that

@@ -1,6 +1,6 @@
 import { DEFAULT_PLAN, ORGANIZATION_ROLES, PLANS } from '@siteops/shared';
 import type { OrganizationRole, Plan } from '@siteops/shared';
-import { Schema, model, models, type HydratedDocument, type Model, type Types } from 'mongoose';
+import mongoose, { Schema, model, type HydratedDocument, type Model, type Types } from 'mongoose';
 
 export interface OrganizationAttributes {
   name: string;
@@ -38,7 +38,7 @@ const organizationSchema = new Schema<OrganizationAttributes>(
 organizationSchema.index({ slug: 1 }, { unique: true, name: 'organization_slug_unique' });
 
 export const OrganizationModel: Model<OrganizationAttributes> =
-  (models.Organization as Model<OrganizationAttributes> | undefined) ??
+  (mongoose.models.Organization as Model<OrganizationAttributes> | undefined) ??
   model<OrganizationAttributes>('Organization', organizationSchema);
 
 export interface OrganizationMemberAttributes {
@@ -80,5 +80,5 @@ organizationMemberSchema.index(
 );
 
 export const OrganizationMemberModel: Model<OrganizationMemberAttributes> =
-  (models.OrganizationMember as Model<OrganizationMemberAttributes> | undefined) ??
+  (mongoose.models.OrganizationMember as Model<OrganizationMemberAttributes> | undefined) ??
   model<OrganizationMemberAttributes>('OrganizationMember', organizationMemberSchema);

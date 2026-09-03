@@ -2,7 +2,7 @@ import { Injectable, type NestMiddleware } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 
-import { logger } from './logger';
+import { logger } from './logger.js';
 
 /** Client-supplied ids are echoed only if they look like ids, never raw. */
 const SAFE_REQUEST_ID = /^[A-Za-z0-9_-]{1,64}$/;

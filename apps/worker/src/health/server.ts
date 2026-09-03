@@ -1,7 +1,7 @@
 import { pingDatabase } from '@siteops/database';
 import { createServer, type Server } from 'node:http';
 
-import { createLogger } from '../logging/logger';
+import { createLogger } from '../logging/logger.js';
 
 const logger = createLogger('health');
 

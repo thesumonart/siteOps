@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasEveryPermission, hasPermission, permissionsFor, PERMISSIONS } from './permissions';
-import { ORGANIZATION_ROLES, outranks, rankOf } from './roles';
+import { hasEveryPermission, hasPermission, permissionsFor, PERMISSIONS } from './permissions.js';
+import { ORGANIZATION_ROLES, outranks, rankOf } from './roles.js';
 
 describe('role hierarchy', () => {
   it('ranks owner above admin above member', () => {

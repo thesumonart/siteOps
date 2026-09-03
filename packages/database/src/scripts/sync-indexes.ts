@@ -8,8 +8,8 @@ import {
   OrganizationModel,
   WebsiteCheckModel,
   WebsiteModel,
-} from '../models';
-import { connectToDatabase, disconnectFromDatabase } from '../connection';
+} from '../models/index.js';
+import { connectToDatabase, disconnectFromDatabase } from '../connection.js';
 
 /**
  * Applies every declared index to the connected database.

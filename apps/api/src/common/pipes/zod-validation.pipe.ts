@@ -2,7 +2,7 @@ import { Injectable, type PipeTransform } from '@nestjs/common';
 import type { ApiFieldError } from '@siteops/shared';
 import type { ZodType } from 'zod';
 
-import { ApiException } from '../errors/api-exception';
+import { ApiException } from '../errors/api-exception.js';
 
 /**
  * Validates a request payload against a Zod schema.

@@ -8,8 +8,8 @@ import {
 import type { ApiErrorCode, ApiErrorResponse } from '@siteops/shared';
 import type { Request, Response } from 'express';
 
-import { ApiException } from '../errors/api-exception';
-import { logger } from '../logging/logger';
+import { ApiException } from '../errors/api-exception.js';
+import { logger } from '../logging/logger.js';
 
 /**
  * Framework-raised HTTP errors carry no SiteOps error code, so status is mapped

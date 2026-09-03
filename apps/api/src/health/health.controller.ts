@@ -1,8 +1,8 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { pingDatabase } from '@siteops/database';
 
-import { ApiException } from '../common/errors/api-exception';
-import { Public } from '../common/decorators/public.decorator';
+import { ApiException } from '../common/errors/api-exception.js';
+import { Public } from '../common/decorators/public.decorator.js';
 
 interface LivenessResult {
   readonly status: 'ok';

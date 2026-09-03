@@ -2,6 +2,7 @@
   "name": "@siteops/worker",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "concurrently -k -n tsc,node -c blue,green \"tsc -p tsconfig.build.json --watch --preserveWatchOutput\" \"node --watch --enable-source-maps --env-file-if-exists=../../.env dist/main.js\"",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { displayUrl, isMonitorableUrl, normalizeWebsiteUrl } from './normalize';
+import { displayUrl, isMonitorableUrl, normalizeWebsiteUrl } from './normalize.js';
 
 function expectRejected(input: string, reason: string): void {
   const result = normalizeWebsiteUrl(input);

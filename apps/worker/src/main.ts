@@ -1,9 +1,9 @@
 import { connectToDatabase, disconnectFromDatabase } from '@siteops/database';
 import type { Server } from 'node:http';
 
-import { env } from './config/env';
-import { startHealthServer } from './health/server';
-import { createLogger, logger } from './logging/logger';
+import { env } from './config/env.js';
+import { startHealthServer } from './health/server.js';
+import { createLogger, logger } from './logging/logger.js';
 
 const log = createLogger('bootstrap');
 

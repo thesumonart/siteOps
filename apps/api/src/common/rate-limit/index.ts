@@ -1,3 +1,3 @@
-export * from './rate-limit.decorator';
-export * from './rate-limit.guard';
-export * from './rate-limiter';
+export * from './rate-limit.decorator.js';
+export * from './rate-limit.guard.js';
+export * from './rate-limiter.js';

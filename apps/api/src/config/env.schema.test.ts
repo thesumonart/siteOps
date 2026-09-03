@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { envSchema } from './env.schema';
+import { envSchema } from './env.schema.js';
 
 const baseEnv = {
   APP_URL: 'http://localhost:3000',

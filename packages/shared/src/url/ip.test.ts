@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { classifyIpAddress, isBlockedIpAddress, parseIpv4, parseIpv6 } from './ip';
+import { classifyIpAddress, isBlockedIpAddress, parseIpv4, parseIpv6 } from './ip.js';
 
 describe('parseIpv4', () => {
   it('parses dotted-quad addresses', () => {

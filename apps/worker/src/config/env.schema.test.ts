@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { envSchema } from './env.schema';
+import { envSchema } from './env.schema.js';
 
 const baseEnv = {
   MONGODB_URI: 'mongodb://localhost:27017/siteops',
