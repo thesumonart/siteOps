@@ -43,6 +43,7 @@ catalog:
 # is blocked, so a transitive package cannot execute code during `pnpm install`.
 # These are native toolchain packages that legitimately need a postinstall step.
 allowBuilds:
+  "@swc/core": true
   "@tailwindcss/oxide": true
   esbuild: true
   sharp: true
