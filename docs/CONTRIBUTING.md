@@ -67,6 +67,28 @@ what the code already says.
 **Dead code** — delete it. No unused files, abandoned components, commented-out implementations or
 placeholder pages for unbuilt features.
 
+## Tests
+
+Three layers, each answering something the others cannot.
+
+**Unit** (`pnpm test`) — pure logic with no I/O: uptime arithmetic, URL and IP validation, incident
+thresholds, the check error taxonomy. Exhaustive, because it is cheap here and nowhere else.
+
+**Integration against a real MongoDB** — the guarantees that _are_ database behaviour: at most one
+open incident per website, one notification per incident, event and recipient. These race
+concurrent writers against a live replica set, because a mock would happily allow what a unique
+index forbids. `MONGODB_URI` is required for them, in CI too.
+
+**End to end** (`pnpm test:e2e`) — a real browser against a real Next.js server, a real API and a
+real database, covering the seams: session cookies crossing an origin, the organization header,
+tenant isolation, an SSRF refusal reaching the person who typed the URL. It builds the web app
+itself, into `.next-e2e`, because `NEXT_PUBLIC_*` values are inlined at build time and the suite
+runs on its own ports. It creates and deletes its own accounts in a `siteops_e2e` database and
+never touches the development one.
+
+Automated tests never fetch a real public website. That would make the suite depend on someone
+else's uptime, and there is a controlled mock server for exactly this.
+
 ## Definition of done
 
 A feature is done when the implementation works end to end, validation and authorization exist,

@@ -24,7 +24,9 @@ No Kubernetes, no queue infrastructure, no service mesh. See
 
 ## MongoDB Atlas
 
-The free M0 tier is a replica set already, which is what the incident transactions need.
+The free M0 tier is a replica set, which is what a production deployment wants for failover.
+SiteOps itself uses no transactions — its correctness guarantees are unique indexes, not
+multi-document atomicity — so a standalone works too, which is why CI runs against one.
 
 - Create a database user with **read/write on the SiteOps database only**, not cluster admin.
 - Restrict network access to the hosting platform's egress addresses where the platform publishes
@@ -38,16 +40,47 @@ cluster limit.
 
 ## Indexes
 
-`autoIndex` is off in production, because an index build issued by a starting process can stall a
-live cluster. Applying indexes is an explicit step, run before the code that needs them:
+Index builds are an explicit step, run before the code that needs them, because a build issued by
+a starting process can stall a live cluster:
 
 ```bash
 MONGODB_URI="mongodb+srv://..." pnpm --filter @siteops/database indexes:sync
 ```
 
+This is not optional housekeeping. Without these indexes the database enforces none of the
+uniqueness the product depends on: a website could be monitored twice, an outage could open two
+incidents, and one incident could send the same alert email repeatedly. Application code does not
+re-check any of that — the index _is_ the guarantee.
+
+`MONGODB_AUTO_INDEX=true` runs the same sync at startup and is meant for development only. It does
+not use Mongoose's own `autoIndex`, which silently does nothing here: models are compiled when
+their module is imported, before the connection is opened, and command buffering is off, so the
+automatic build never runs.
+
+## Container image
+
+One image builds both Node services; the command decides which runs. They share every dependency,
+so a second image would be near-identical.
+
+```bash
+docker build -t siteops .
+docker run siteops node apps/api/dist/main.js
+docker run siteops node apps/worker/dist/main.js
+```
+
+It runs as the unprivileged `node` user, and neither process is wrapped in a shell, so `SIGTERM`
+reaches it directly and the graceful-shutdown path runs.
+
+**Known issue — image size.** `better-auth` declares `next`, `react` and `vitest` as optional peer
+dependencies. pnpm resolves them from the workspace root, where the web app has them installed, so
+`pnpm deploy` faithfully copies the whole Next toolchain into the API's tree — several hundred
+megabytes the API never loads. The worker, which does not depend on Better Auth, deploys at about
+26 MB. Nothing is broken by this; it costs build time and registry storage.
+
 ## API
 
-Any container host will do — Railway, Render, Fly.io. The API is a plain Node process.
+Any container host will do — Railway, Render, Fly.io. The API is a plain Node process, whether run
+from the image above or directly:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -112,7 +145,7 @@ rather than letting it run misconfigured. `.env.example` is the complete list.
 | `COOKIE_DOMAIN`              | no       | Only if API and web share a parent domain |
 | `ADDITIONAL_TRUSTED_ORIGINS` | no       | Extra CORS origins, comma-separated       |
 | `TRUST_PROXY`                | no       | `true` only behind a real proxy           |
-| `MONGODB_AUTO_INDEX`         | no       | Leave `false`                             |
+| `MONGODB_AUTO_INDEX`         | no       | Leave `false`; see Indexes above          |
 
 ### Worker
 

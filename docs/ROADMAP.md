@@ -35,9 +35,12 @@ Incidents and notifications shipped alongside the monitoring engine rather than 
 engine that detects an outage and tells nobody is not a working feature, and the three share one
 transaction-free idempotency design that is only testable as a whole.
 
+- **Hardening and deployment** — end-to-end tests over the real stack, tenant-isolation and SSRF
+  coverage from the browser, retention assertions, a container image for the two Node services
+
 ## In progress
 
-- **Hardening and deployment** — security review, indexes, retention, E2E tests, production deploy
+- **Production deploy** — Atlas cluster, container host, Vercel project, DNS and cookie domain
 
 Two things are recorded in the database but have no route or screen yet, and are deliberately not
 linked anywhere: the in-app notification feed (`notifications`) and the audit log (`audit_logs`).

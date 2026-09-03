@@ -23,7 +23,8 @@ Under active development. See [docs/ROADMAP.md](docs/ROADMAP.md) for what is bui
 | Monitoring engine           | Done        |
 | Incidents and notifications | Done        |
 | Dashboard                   | Done        |
-| Hardening and deployment    | In progress |
+| Hardening, E2E, container   | Done        |
+| Production deploy           | In progress |
 
 ## Requirements
 
