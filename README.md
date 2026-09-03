@@ -22,7 +22,8 @@ Under active development. See [docs/ROADMAP.md](docs/ROADMAP.md) for what is bui
 | Website management          | Done        |
 | Monitoring engine           | Done        |
 | Incidents and notifications | Done        |
-| Dashboard                   | In progress |
+| Dashboard                   | Done        |
+| Hardening and deployment    | In progress |
 
 ## Requirements
 

@@ -114,7 +114,11 @@ counting is wasteful and offsets drift as documents arrive.
 { "items": [], "pagination": { "nextCursor": "...", "hasNextPage": true, "pageSize": 20 } }
 ```
 
-The cursor is opaque and is never a raw database value.
+The cursor is opaque and is never a raw database value. It encodes a timestamp **and** a document
+id: the worker writes a whole batch of checks concurrently, so two documents can share a
+millisecond, and a timestamp-only cursor would silently skip or repeat one of them. A malformed
+cursor is rejected with `VALIDATION_ERROR` rather than being ignored — quietly restarting from the
+newest page looks to the reader like a list that jumps to the top on its own.
 
 ## Endpoints
 
@@ -138,19 +142,36 @@ verification, password reset and session.
 | DELETE | `/websites/:id`                        | `website:delete`      |
 | POST   | `/websites/:id/pause`                  | `monitoring:toggle`   |
 | POST   | `/websites/:id/resume`                 | `monitoring:toggle`   |
-| GET    | `/websites/:id/checks`                 | `monitoring:read`     |
+| GET    | `/websites/:id/stats`                  | `monitoring:read`     |
 | GET    | `/websites/:id/uptime`                 | `monitoring:read`     |
-| GET    | `/websites/:id/incidents`              | `incident:read`       |
+| GET    | `/websites/:id/checks`                 | `monitoring:read`     |
 | GET    | `/incidents`                           | `incident:read`       |
-| GET    | `/dashboard/stats`                     | `website:read`        |
-| GET    | `/notifications`                       | `notification:read`   |
-| PATCH  | `/notifications/:id/read`              | `notification:update` |
+| GET    | `/incidents/:id`                       | `incident:read`       |
+| GET    | `/dashboard/stats`                     | `monitoring:read`     |
 | GET    | `/notification-settings`               | `notification:read`   |
 | PATCH  | `/notification-settings`               | `notification:update` |
-| GET    | `/audit-logs`                          | `audit_log:read`      |
 
-Endpoints are documented here as they are implemented; see [ROADMAP.md](ROADMAP.md) for current
-state.
+Every endpoint above exists. Nothing is listed here before it is built — see
+[ROADMAP.md](ROADMAP.md) for what is planned. An in-app notification feed and an audit-log endpoint
+are both recorded in the database already but have no route yet.
+
+### Monitoring reads
+
+`/websites/:id/stats` and `/websites/:id/uptime` take `?range=24h|7d|30d`, defaulting to `24h`. The
+range is a closed set rather than a pair of dates: an open-ended window would let a caller ask the
+API to scan an organization's entire check history, which is the largest collection in the product.
+
+`stats` returns the totals for the window; `uptime` returns the same figures grouped into buckets
+for a chart, sized to keep any range to a readable number of points. **Periods with no checks are
+absent rather than zero**, because a gap means monitoring was paused or the worker was down, and
+reporting it as 0% uptime would invent an outage.
+
+Uptime is `null`, never `100`, when nothing has been measured. `/incidents` accepts
+`?status=open|resolved` and `?websiteId=`.
+
+`GET /websites` returns each row with `uptimePercentage24h`, `averageResponseTimeMs24h` and
+`openIncidentId` alongside the website itself, so the dashboard table needs one request rather than
+one per row.
 
 ## Organization scope
 
