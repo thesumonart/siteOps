@@ -90,12 +90,17 @@ export class OrganizationGuard implements CanActivate {
 /**
  * A path parameter wins over the header: an explicitly addressed resource is
  * unambiguous, while the header only describes what the UI is showing.
+ *
+ * Only `organizationId` is read, never a generic `:id`. A route naming its
+ * parameter `:id` for some *other* resource — a website, an incident — would
+ * otherwise have that id silently treated as an organization, and every
+ * request to it would resolve the wrong tenant or none at all.
  */
 function readOrganizationId(request: Request): string | null {
   // Express types a route parameter as `string | string[]`; a repeated
   // parameter is not a valid id, so only a plain string is accepted.
   const params: Record<string, string | string[] | undefined> = request.params;
-  const fromPath = params.organizationId ?? params.id;
+  const fromPath = params.organizationId;
   if (typeof fromPath === 'string' && fromPath.length > 0) return fromPath;
 
   const fromHeader = request.header(ORGANIZATION_HEADER);
