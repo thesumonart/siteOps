@@ -9,12 +9,32 @@
   "endOfLine": "lf",
   "overrides": [
     {
-      "files": ["*.md", "*.mdx"],
-      "options": { "proseWrap": "preserve" }
+      "files": [
+        "*.md",
+        "*.mdx"
+      ],
+      "options": {
+        "proseWrap": "preserve"
+      }
     },
     {
-      "files": ["*.yml", "*.yaml"],
-      "options": { "singleQuote": false }
+      "files": [
+        "*.yml",
+        "*.yaml"
+      ],
+      "options": {
+        "singleQuote": false
+      }
     }
+  ],
+  "plugins": [
+    "prettier-plugin-tailwindcss"
+  ],
+  "tailwindStylesheet": "./apps/web/src/app/globals.css",
+  "tailwindFunctions": [
+    "cn",
+    "clsx",
+    "cva",
+    "twMerge"
   ]
 }

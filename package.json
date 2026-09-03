@@ -32,6 +32,7 @@
     "husky": "9.1.7",
     "lint-staged": "17.4.1",
     "prettier": "catalog:",
+    "prettier-plugin-tailwindcss": "catalog:",
     "rimraf": "catalog:",
     "turbo": "2.10.12",
     "typescript": "catalog:"
@@ -39,7 +40,7 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [
       "prettier --write",
-      "eslint --fix --max-warnings=0"
+      "eslint --fix --max-warnings=0 --no-warn-ignored"
     ],
     "*.{json,md,yml,yaml,css}": [
       "prettier --write"
