@@ -1,26 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { escapeHtml } from './layout.js';
 import { resetPasswordTemplate } from './reset-password.js';
 import { verifyEmailTemplate } from './verify-email.js';
 
 /**
- * The display name is user-controlled and lands inside an HTML document that is
- * delivered to an inbox. These assertions exist so a refactor cannot quietly
- * drop the escaping and turn a sign-up field into stored HTML injection.
+ * These templates share the escaping-security guarantees tested exhaustively
+ * in `@siteops/shared`'s `email/layout.test.ts` — the checks here only cover
+ * that each template actually threads user-controlled fields through the
+ * escaping layout rather than interpolating them directly.
  */
-describe('escapeHtml', () => {
-  it('escapes every character that could break out of markup', () => {
-    expect(escapeHtml('<script>alert(1)</script>')).toBe('&lt;script&gt;alert(1)&lt;/script&gt;');
-    expect(escapeHtml('a & b')).toBe('a &amp; b');
-    expect(escapeHtml(`"quoted" 'single'`)).toBe('&quot;quoted&quot; &#39;single&#39;');
-  });
-
-  it('escapes the ampersand first so entities are not double-broken', () => {
-    expect(escapeHtml('&lt;')).toBe('&amp;lt;');
-  });
-});
-
 describe('verifyEmailTemplate', () => {
   const props = {
     name: 'Sumon',

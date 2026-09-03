@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 
 import { env, isProduction } from '../config/env.js';
 import { createLogger } from '../common/logging/logger.js';
-import { type EmailDeliveryResult, type EmailMessage } from './email.types.js';
+import { type EmailDeliveryResult, type EmailMessage } from '@siteops/shared';
 
 const logger = createLogger('email');
 

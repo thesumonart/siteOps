@@ -1,5 +1,9 @@
-import { type EmailContent } from '../email.types.js';
-import { renderLayout, renderPlainText, type LayoutOptions } from './layout.js';
+import {
+  renderLayout,
+  renderPlainText,
+  type EmailContent,
+  type LayoutOptions,
+} from '@siteops/shared';
 
 export interface ResetPasswordProps {
   readonly name: string;

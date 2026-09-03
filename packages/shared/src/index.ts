@@ -11,6 +11,9 @@ export * from './domain/plan.js';
 export * from './domain/roles.js';
 export * from './domain/website.js';
 
+export * from './email/layout.js';
+export * from './email/types.js';
+
 export * from './schemas/auth.js';
 export * from './schemas/common.js';
 export * from './schemas/notification.js';
