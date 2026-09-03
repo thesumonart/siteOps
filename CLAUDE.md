@@ -56,7 +56,7 @@ pnpm build
 pnpm lint
 pnpm typecheck
 pnpm test
-pnpm test:e2e
+pnpm test:e2e     # real browser, real API, real database
 pnpm format
 pnpm format:check
 pnpm docker:up      # local MongoDB replica set
@@ -76,7 +76,10 @@ the API's `ZodValidationPipe`. Do not add `class-validator` DTOs; two validation
 unavoidable, document why on the line.
 
 **Database.** Every organization-scoped query takes `organizationId`. Timestamps are UTC. New
-indexes need a stated query and a note in `docs/DATABASE.md`.
+indexes need a stated query and a note in `docs/DATABASE.md`. Indexes are created only by
+`pnpm --filter @siteops/database indexes:sync` — Mongoose's `autoIndex` does nothing here, because
+models compile before the connection opens and command buffering is off. Without the sync the
+database enforces none of the uniqueness the product relies on.
 
 **API.** Success is `{ success: true, data }`; failure is `{ success: false, error: { code, message } }`.
 Error codes come from `API_ERROR_CODES`. Everything paginated, never unbounded.
