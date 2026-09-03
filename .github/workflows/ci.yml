@@ -25,7 +25,9 @@ jobs:
     services:
       # Integration tests run against a real MongoDB rather than mocks, because
       # the guarantees under test — unique partial indexes preventing duplicate
-      # incidents, TTL retention — are enforced by the database itself.
+      # incidents, TTL retention — are enforced by the database itself. A
+      # standalone is enough: nothing in SiteOps uses transactions, which is the
+      # only thing that would need a replica set.
       mongo:
         image: mongo:8
         ports:
@@ -80,3 +82,63 @@ jobs:
           # Build-time values only. Real secrets are never available to CI.
           NEXT_PUBLIC_API_URL: http://localhost:4000
           NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Runs only once the cheap checks have passed: a browser suite is the
+    # slowest signal in the pipeline and the least useful place to learn that
+    # the code does not compile.
+    needs: verify
+
+    services:
+      mongo:
+        image: mongo:8
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1}).ok'"
+          --health-interval 5s
+          --health-timeout 10s
+          --health-retries 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Only the API build is needed up front. The web app is rebuilt by the
+      # Playwright harness against the throwaway API URL, because NEXT_PUBLIC_*
+      # values are inlined at build time.
+      - name: Build the API
+        run: pnpm --filter @siteops/api... build
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @siteops/web exec playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: pnpm --filter @siteops/web test:e2e
+        env:
+          # No replica set in CI; `directConnection` makes the driver skip
+          # topology discovery and talk to the standalone.
+          E2E_MONGODB_URI: mongodb://localhost:27017/siteops_e2e?directConnection=true
+
+      - name: Upload the report when it fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
