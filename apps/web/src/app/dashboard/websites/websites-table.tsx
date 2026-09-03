@@ -5,6 +5,7 @@ import {
   WEBSITE_STATUS_PRESENTATION,
   displayUrl,
   formatResponseTime,
+  formatUptimePercentage,
   type Permission,
   type WebsiteStatus,
 } from '@siteops/shared';
@@ -207,7 +208,7 @@ export function WebsitesTable({
           {/* Wide content scrolls inside its own container so the page body
               never scrolls sideways on a phone. */}
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[36rem] text-sm">
+            <table className="w-full min-w-[44rem] text-sm">
               <caption className="sr-only">Websites monitored by this organization</caption>
               <thead>
                 <tr className="border-b text-left text-xs text-muted-foreground">
@@ -216,6 +217,9 @@ export function WebsitesTable({
                   </th>
                   <th scope="col" className="px-4 py-2.5 font-medium">
                     Status
+                  </th>
+                  <th scope="col" className="px-4 py-2.5 text-right font-medium">
+                    Uptime 24h
                   </th>
                   <th scope="col" className="px-4 py-2.5 text-right font-medium">
                     Response
@@ -241,7 +245,11 @@ export function WebsitesTable({
                       <StatusBadge status={website.status} />
                     </td>
                     <td className="tabular-figures px-4 py-3 text-right font-mono text-xs">
-                      {formatResponseTime(website.lastResponseTimeMs)}
+                      {/* An em dash, not 100%, when nothing has been measured. */}
+                      {formatUptimePercentage(website.uptimePercentage24h)}
+                    </td>
+                    <td className="tabular-figures px-4 py-3 text-right font-mono text-xs">
+                      {formatResponseTime(website.averageResponseTimeMs24h)}
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground">
                       {website.lastCheckedAt ? (

@@ -4,6 +4,7 @@ import type {
   OffsetPaginatedResult,
   UpdateWebsiteInput,
   WebsiteDto,
+  WebsiteSummaryDto,
 } from '@siteops/shared';
 
 import { apiRequest } from './api-client';
@@ -12,7 +13,7 @@ import { apiRequest } from './api-client';
 
 export async function fetchWebsites(
   query: Partial<ListWebsitesQuery> = {},
-): Promise<OffsetPaginatedResult<WebsiteDto>> {
+): Promise<OffsetPaginatedResult<WebsiteSummaryDto>> {
   const params = new URLSearchParams();
   if (query.page !== undefined) params.set('page', String(query.page));
   if (query.pageSize !== undefined) params.set('pageSize', String(query.pageSize));
@@ -20,7 +21,9 @@ export async function fetchWebsites(
   if (query.status) params.set('status', query.status);
 
   const suffix = params.size > 0 ? `?${params.toString()}` : '';
-  return apiRequest<OffsetPaginatedResult<WebsiteDto>>(`/api/websites${suffix}`);
+  // The list carries 24-hour uptime and response-time rollups per row; the
+  // single-website endpoint does not, because its page loads richer stats.
+  return apiRequest<OffsetPaginatedResult<WebsiteSummaryDto>>(`/api/websites${suffix}`);
 }
 
 export async function fetchWebsite(websiteId: string): Promise<WebsiteDto> {

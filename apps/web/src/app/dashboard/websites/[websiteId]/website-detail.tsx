@@ -33,6 +33,7 @@ import { ApiError } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
 import { deleteWebsite, fetchWebsite, setWebsiteMonitoring, updateWebsite } from '@/lib/websites';
 import { cn } from '@/lib/utils';
+import { WebsiteMonitoring } from './website-monitoring';
 
 export interface WebsiteDetailProps {
   readonly organizationId: string;
@@ -230,6 +231,8 @@ export function WebsiteDetail({
           </CardContent>
         </Card>
       </div>
+
+      <WebsiteMonitoring organizationId={organizationId} websiteId={websiteId} />
 
       <section aria-labelledby="settings-heading" className="rounded-xl border">
         <div className="border-b px-5 py-4">

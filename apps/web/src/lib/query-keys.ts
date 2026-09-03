@@ -11,4 +11,16 @@ export const queryKeys = {
     ['organizations', organizationId, 'websites', filters ?? {}] as const,
   website: (organizationId: string, websiteId: string) =>
     ['organizations', organizationId, 'websites', websiteId] as const,
+  dashboardStats: (organizationId: string) =>
+    ['organizations', organizationId, 'dashboard-stats'] as const,
+  websiteStats: (organizationId: string, websiteId: string, range: string) =>
+    ['organizations', organizationId, 'websites', websiteId, 'stats', range] as const,
+  websiteUptime: (organizationId: string, websiteId: string, range: string) =>
+    ['organizations', organizationId, 'websites', websiteId, 'uptime', range] as const,
+  websiteChecks: (organizationId: string, websiteId: string, filters?: Record<string, unknown>) =>
+    ['organizations', organizationId, 'websites', websiteId, 'checks', filters ?? {}] as const,
+  incidents: (organizationId: string, filters?: Record<string, unknown>) =>
+    ['organizations', organizationId, 'incidents', filters ?? {}] as const,
+  notificationSettings: (organizationId: string) =>
+    ['organizations', organizationId, 'notification-settings'] as const,
 } as const;
