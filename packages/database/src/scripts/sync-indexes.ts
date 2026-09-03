@@ -37,7 +37,6 @@ async function main(): Promise<void> {
     WebsiteCheckModel,
     IncidentModel,
     InvitationModel,
-    InvitationModel,
     NotificationModel,
     NotificationSettingsModel,
     AuditLogModel,

@@ -22,7 +22,6 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml,css}\"",
     "clean": "turbo run clean && rimraf node_modules .turbo",
-    "db:seed": "pnpm --filter @siteops/database run seed",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "prepare": "git config core.hooksPath .githooks"

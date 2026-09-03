@@ -22,7 +22,6 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed": "tsx src/scripts/seed.ts",
     "indexes:sync": "tsx src/scripts/sync-indexes.ts"
   },
   "dependencies": {
