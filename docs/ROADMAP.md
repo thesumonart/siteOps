@@ -20,12 +20,10 @@ for a feature that is not implemented.
   sessions, server-side route protection, transactional email
 - **Organizations** — creation, switching, members, roles, permissions, invitations, tenant
   isolation, audit logging
+- **Website management** — add, edit, delete, pause and resume monitoring, search, filtering and
+  pagination, plan limits
 
 ## In progress
-
-- **Website management** — add, edit, delete, pause and resume monitoring
-
-## Next
 
 - **Monitoring engine** — scheduler, HTTP checker, SSRF address validation, persistence,
   concurrency control

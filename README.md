@@ -19,8 +19,8 @@ Under active development. See [docs/ROADMAP.md](docs/ROADMAP.md) for what is bui
 | API, worker, web foundation | Done        |
 | Authentication              | Done        |
 | Organizations and roles     | Done        |
-| Website management          | In progress |
-| Monitoring engine           | Planned     |
+| Website management          | Done        |
+| Monitoring engine           | In progress |
 
 ## Requirements
 
