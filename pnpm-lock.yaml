@@ -295,6 +295,12 @@ importers:
       pino:
         specifier: 10.3.1
         version: 10.3.1
+      resend:
+        specifier: 6.25.0
+        version: 6.25.0
+      undici:
+        specifier: 8.10.1
+        version: 8.10.1
       zod:
         specifier: 'catalog:'
         version: 4.5.4
