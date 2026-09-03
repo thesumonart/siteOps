@@ -1,61 +1,83 @@
-import { Activity } from 'lucide-react';
+import { PLAN_LABELS, permissionsFor } from '@siteops/shared';
+import { Building2, Users } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 
-import { SignOutButton } from '@/components/layout/sign-out-button';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ACTIVE_ORGANIZATION_COOKIE, resolveActiveOrganizationId } from '@/lib/active-organization';
 import { fetchSession } from '@/lib/auth';
 
 export const metadata: Metadata = {
-  title: 'Dashboard',
+  title: 'Overview',
 };
 
 /**
- * The authenticated shell.
+ * Organization overview.
  *
- * Rendered on the server so the session is resolved by the API before anything
- * reaches the browser — the middleware only checks that a cookie exists, which
- * is a routing hint rather than proof. Organizations and the monitoring
- * overview are added on top of this shell in the next phases.
+ * Shows only what the product actually measures today. Uptime, response times
+ * and incidents appear here once the monitoring engine records them — nothing
+ * on this page is invented to fill space.
  */
 export default async function DashboardPage(): Promise<React.ReactElement> {
-  // The incoming cookie has to be forwarded explicitly: a server component
-  // makes its own request and does not inherit the browser's.
   const requestHeaders = await headers();
   const cookie = requestHeaders.get('cookie');
+  const session = await fetchSession(cookie ? { cookie } : undefined);
 
-  const user = await fetchSession(cookie ? { cookie } : undefined);
+  if (!session) redirect('/login?next=%2Fdashboard');
 
-  if (!user) {
-    redirect('/login?next=%2Fdashboard');
-  }
+  const cookieStore = await cookies();
+  const activeId = resolveActiveOrganizationId(
+    cookieStore.get(ACTIVE_ORGANIZATION_COOKIE)?.value ?? null,
+    session.memberships.map((entry) => entry.organization.id),
+  );
+  const active = session.memberships.find((entry) => entry.organization.id === activeId);
+  if (!active) redirect('/onboarding');
 
-  if (!user.emailVerified) {
-    redirect(`/verify-email?email=${encodeURIComponent(user.email)}`);
-  }
+  const canInvite = permissionsFor(active.role).includes('member:invite');
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="border-b">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
-          <span className="flex items-center gap-2 font-semibold tracking-tight">
-            <Activity className="size-5 text-primary" aria-hidden="true" />
-            SiteOps
-          </span>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
-            <SignOutButton />
-          </div>
-        </div>
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">{active.organization.name}</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {PLAN_LABELS[active.organization.plan]} plan · you are an {active.role}
+        </p>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome, {user.name}</h1>
-        <p className="mt-1.5 text-sm text-pretty text-muted-foreground">
-          Your account is confirmed. The next step is creating an organization to group the websites
-          you look after.
-        </p>
-      </main>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <Card>
+          <CardHeader className="flex-row items-center gap-2">
+            <Building2 className="size-4 text-muted-foreground" aria-hidden="true" />
+            <CardTitle>Websites monitored</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="tabular-figures font-mono text-2xl">{active.organization.websiteCount}</p>
+            <p className="mt-1 text-sm text-pretty text-muted-foreground">
+              Website monitoring is the next thing being built. Nothing is being checked yet.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex-row items-center gap-2">
+            <Users className="size-4 text-muted-foreground" aria-hidden="true" />
+            <CardTitle>Your team</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-pretty text-muted-foreground">
+              {canInvite
+                ? 'Invite the people who should see these sites, and choose what each of them can do.'
+                : 'See who else has access to this organization.'}
+            </p>
+            <Button variant="outline" size="sm" asChild className="mt-3">
+              <Link href="/dashboard/members">{canInvite ? 'Manage members' : 'View members'}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

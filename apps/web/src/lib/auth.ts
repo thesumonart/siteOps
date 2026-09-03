@@ -1,4 +1,4 @@
-import type { UserDto } from '@siteops/shared';
+import type { SessionDto } from '@siteops/shared';
 
 import { apiRequest } from './api-client';
 
@@ -74,10 +74,15 @@ export async function resendVerificationEmail(email: string): Promise<void> {
   });
 }
 
-/** Returns the signed-in user, or null. Never throws for "signed out". */
-export async function fetchSession(headers?: Record<string, string>): Promise<UserDto | null> {
-  const result = await apiRequest<{ user: UserDto | null }>('/api/session', {
+/**
+ * The signed-in user with their organizations, or null.
+ *
+ * Never throws for "signed out": the endpoint answers with a null user, so a
+ * first paint can distinguish that from a failed request.
+ */
+export async function fetchSession(headers?: Record<string, string>): Promise<SessionDto | null> {
+  const result = await apiRequest<SessionDto | { user: null }>('/api/session', {
     ...(headers ? { headers } : {}),
   });
-  return result.user;
+  return result.user === null ? null : result;
 }

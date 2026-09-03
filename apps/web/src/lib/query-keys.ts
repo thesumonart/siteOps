@@ -6,4 +6,5 @@
  */
 export const queryKeys = {
   session: ['session'] as const,
+  members: (organizationId: string) => ['organizations', organizationId, 'members'] as const,
 } as const;

@@ -17,9 +17,9 @@ Under active development. See [docs/ROADMAP.md](docs/ROADMAP.md) for what is bui
 | Monorepo, tooling, CI       | Done        |
 | Shared domain + database    | Done        |
 | API, worker, web foundation | Done        |
-| Authentication              | In progress |
-| Organizations and roles     | Planned     |
-| Website management          | Planned     |
+| Authentication              | Done        |
+| Organizations and roles     | Done        |
+| Website management          | In progress |
 | Monitoring engine           | Planned     |
 
 ## Requirements

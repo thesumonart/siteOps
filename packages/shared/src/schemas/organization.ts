@@ -42,6 +42,7 @@ export const createOrganizationSchema = z.object({
   slug: organizationSlugSchema.optional(),
 });
 
+export type CreateOrganizationFormValues = z.input<typeof createOrganizationSchema>;
 export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
 
 export const updateOrganizationSchema = z.object({
@@ -60,6 +61,7 @@ export const inviteMemberSchema = z.object({
   role: assignableRoleSchema.default('member'),
 });
 
+export type InviteMemberFormValues = z.input<typeof inviteMemberSchema>;
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;
 
 export const acceptInvitationSchema = z.object({

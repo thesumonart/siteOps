@@ -18,14 +18,15 @@ for a feature that is not implemented.
   shutdown
 - **Authentication** — registration, sign-in, sign-out, email verification, password reset,
   sessions, server-side route protection, transactional email
+- **Organizations** — creation, switching, members, roles, permissions, invitations, tenant
+  isolation, audit logging
 
 ## In progress
 
-- **Organizations** — creation, switching, members, roles, permissions, tenant isolation
+- **Website management** — add, edit, delete, pause and resume monitoring
 
 ## Next
 
-- **Website management** — add, edit, delete, pause and resume monitoring
 - **Monitoring engine** — scheduler, HTTP checker, SSRF address validation, persistence,
   concurrency control
 - **Incidents** — failure and recovery thresholds, creation, resolution, deduplication, history

@@ -1,5 +1,6 @@
 import type { ApiErrorCode, ApiFieldError, ApiResponse } from '@siteops/shared';
 
+import { readActiveOrganizationCookie } from './active-organization';
 import { env } from './env';
 
 /**
@@ -55,6 +56,22 @@ export async function apiRequest<TData>(
 ): Promise<TData> {
   const { method = 'GET', body, signal, headers = {} } = options;
 
+  const requestHeaders: Record<string, string> = { ...headers };
+
+  if (body !== undefined) {
+    requestHeaders['Content-Type'] = 'application/json';
+  }
+
+  /*
+   * Names the organization the UI is currently showing. The API treats it as a
+   * hint and re-resolves membership from the session, so this cannot be used to
+   * reach another tenant. An explicit caller-supplied value always wins.
+   */
+  const activeOrganizationId = readActiveOrganizationCookie();
+  if (activeOrganizationId !== null && requestHeaders['X-Organization-Id'] === undefined) {
+    requestHeaders['X-Organization-Id'] = activeOrganizationId;
+  }
+
   let response: Response;
   try {
     response = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, {
@@ -62,10 +79,7 @@ export async function apiRequest<TData>(
       // The session lives in an HttpOnly cookie, so it must be sent explicitly
       // on cross-origin requests. It is never readable from JavaScript.
       credentials: 'include',
-      headers: {
-        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
-        ...headers,
-      },
+      headers: requestHeaders,
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       ...(signal ? { signal } : {}),
       cache: 'no-store',
