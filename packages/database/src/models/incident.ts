@@ -65,17 +65,30 @@ incidentSchema.index(
   },
 );
 
-// Backs the organization incident list, newest first.
-incidentSchema.index({ organizationId: 1, startedAt: -1 }, { name: 'incident_org_started_at' });
-
-// Backs the "open incidents" counter and filter.
+/*
+ * Backs the organization incident list, newest first.
+ *
+ * `_id` is the last key because the list is paged by a keyset cursor sorted on
+ * `(startedAt, _id)` — two websites failing in the same millisecond would
+ * otherwise make the page boundary ambiguous, and the tiebreak has to be part
+ * of the index or the sort becomes a blocking one.
+ */
 incidentSchema.index(
-  { organizationId: 1, status: 1, startedAt: -1 },
+  { organizationId: 1, startedAt: -1, _id: -1 },
+  { name: 'incident_org_started_at' },
+);
+
+// Backs the "open incidents" counter and the status filter on that same list.
+incidentSchema.index(
+  { organizationId: 1, status: 1, startedAt: -1, _id: -1 },
   { name: 'incident_org_status_started_at' },
 );
 
 // Backs the incident history shown on a website's detail page.
-incidentSchema.index({ websiteId: 1, startedAt: -1 }, { name: 'incident_website_started_at' });
+incidentSchema.index(
+  { websiteId: 1, startedAt: -1, _id: -1 },
+  { name: 'incident_website_started_at' },
+);
 
 export const IncidentModel: Model<IncidentAttributes> =
   (mongoose.models.Incident as Model<IncidentAttributes> | undefined) ??

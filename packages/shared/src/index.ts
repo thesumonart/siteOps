@@ -16,6 +16,7 @@ export * from './email/types.js';
 
 export * from './schemas/auth.js';
 export * from './schemas/common.js';
+export * from './schemas/monitoring.js';
 export * from './schemas/notification.js';
 export * from './schemas/organization.js';
 export * from './schemas/website.js';

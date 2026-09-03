@@ -67,21 +67,31 @@ Every index below exists for a named query. None were added speculatively.
 
 ### `website_checks`
 
-| Index                                | Purpose                             |
-| ------------------------------------ | ----------------------------------- |
-| `{websiteId, checkedAt: -1}`         | Check history and uptime rollups    |
-| `{websiteId, status, checkedAt: -1}` | The "errors only" filter            |
-| `{organizationId, checkedAt: -1}`    | Organization-wide dashboard rollups |
-| `{checkedAt}` TTL, 90 days           | Retention backstop                  |
+| Index                                         | Purpose                                         |
+| --------------------------------------------- | ----------------------------------------------- |
+| `{websiteId, checkedAt: -1, _id: -1}`         | Check history, keyset-paged, and uptime rollups |
+| `{websiteId, status, checkedAt: -1, _id: -1}` | The "errors only" filter, same paging           |
+| `{organizationId, checkedAt: -1}`             | Organization-wide dashboard rollups             |
+| `{checkedAt}` TTL, 90 days                    | Retention backstop                              |
+
+The two paging indexes end in `_id` because the history is read newest-first with a keyset cursor
+sorted on `(checkedAt, _id)`. Without `_id` in the index the database can satisfy the range but not
+the sort, so every page would scan a website's entire history to top-K sort twenty rows out of it —
+the difference between a bounded index scan and a full scan per page load.
 
 ### `incidents`
 
-| Index                                             | Purpose                                                                                                                                                                        |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `{websiteId}` unique, partial on `status: 'open'` | **At most one open incident per website.** This is the deduplication guarantee — two workers racing on the same failing check produce a duplicate-key error, not two incidents |
-| `{organizationId, startedAt: -1}`                 | Incident list                                                                                                                                                                  |
-| `{organizationId, status, startedAt: -1}`         | Open-incident counter and filter                                                                                                                                               |
-| `{websiteId, startedAt: -1}`                      | Incident history on a website page                                                                                                                                             |
+| Index                                              | Purpose                                                                                                                                                                        |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `{websiteId}` unique, partial on `status: 'open'`  | **At most one open incident per website.** This is the deduplication guarantee — two workers racing on the same failing check produce a duplicate-key error, not two incidents |
+| `{organizationId, startedAt: -1, _id: -1}`         | Incident list, keyset-paged                                                                                                                                                    |
+| `{organizationId, status, startedAt: -1, _id: -1}` | Open-incident counter and the status filter on that list                                                                                                                       |
+| `{websiteId, startedAt: -1, _id: -1}`              | Incident history on a website page                                                                                                                                             |
+
+`_id` is the trailing key for the same reason as on `website_checks`, and for a second one specific
+to incidents: the worker checks a batch of websites concurrently, so two of them genuinely can open
+an incident in the same millisecond. A cursor on `startedAt` alone would make that page boundary
+ambiguous and silently skip or repeat one of them.
 
 ### `notifications`
 

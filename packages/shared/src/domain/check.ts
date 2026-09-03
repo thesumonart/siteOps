@@ -46,3 +46,23 @@ export function isSuccessfulCheck(status: CheckStatus): boolean {
 export function isSuccessfulHttpStatus(statusCode: number): boolean {
   return statusCode >= 200 && statusCode < 400;
 }
+
+/**
+ * Windows the dashboard can summarise. Kept closed so a caller cannot ask for
+ * an arbitrary range and scan the whole check history.
+ */
+export const STATS_RANGES = ['24h', '7d', '30d'] as const;
+
+export type StatsRange = (typeof STATS_RANGES)[number];
+
+export const STATS_RANGE_HOURS: Record<StatsRange, number> = {
+  '24h': 24,
+  '7d': 24 * 7,
+  '30d': 24 * 30,
+};
+
+export const STATS_RANGE_LABELS: Record<StatsRange, string> = {
+  '24h': 'Last 24 hours',
+  '7d': 'Last 7 days',
+  '30d': 'Last 30 days',
+};

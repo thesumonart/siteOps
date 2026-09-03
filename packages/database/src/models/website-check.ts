@@ -51,13 +51,23 @@ const websiteCheckSchema = new Schema<WebsiteCheckAttributes>(
   },
 );
 
-// The check-history table and every uptime aggregation read one website's most
-// recent checks, which is exactly this index.
-websiteCheckSchema.index({ websiteId: 1, checkedAt: -1 }, { name: 'check_website_checked_at' });
+/*
+ * The check-history table and every uptime aggregation read one website's most
+ * recent checks, which is exactly these indexes.
+ *
+ * They end in `_id` because the history is paged by a keyset cursor sorted on
+ * `(checkedAt, _id)`. Without `_id` in the index the database can satisfy the
+ * range but not the sort, and every page would scan a website's entire history
+ * to top-K sort 20 rows out of it.
+ */
+websiteCheckSchema.index(
+  { websiteId: 1, checkedAt: -1, _id: -1 },
+  { name: 'check_website_checked_at' },
+);
 
 // Backs the "errors only" filter on the check history view.
 websiteCheckSchema.index(
-  { websiteId: 1, status: 1, checkedAt: -1 },
+  { websiteId: 1, status: 1, checkedAt: -1, _id: -1 },
   { name: 'check_website_status_checked_at' },
 );
 

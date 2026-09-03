@@ -1,5 +1,5 @@
 import { type AuditAction } from '../domain/audit.js';
-import { type CheckErrorType, type CheckStatus } from '../domain/check.js';
+import { type CheckErrorType, type CheckStatus, type StatsRange } from '../domain/check.js';
 import { type IncidentStatus, type IncidentType } from '../domain/incident.js';
 import {
   type NotificationChannel,
@@ -94,7 +94,7 @@ export interface WebsiteCheckDto {
 }
 
 export interface UptimeStatsDto {
-  readonly range: '24h' | '7d' | '30d';
+  readonly range: StatsRange;
   readonly totalChecks: number;
   readonly successfulChecks: number;
   readonly failedChecks: number;
