@@ -1,10 +1,11 @@
 import { Controller, Get, Inject, Req } from '@nestjs/common';
-import type { UserDto } from '@siteops/shared';
+import type { SessionDto, UserDto } from '@siteops/shared';
 import { fromNodeHeaders } from 'better-auth/node';
 import type { Request } from 'express';
 
 import { Public } from '../common/decorators/public.decorator.js';
 import { RateLimit } from '../common/rate-limit/index.js';
+import { OrganizationService } from '../organizations/organization.service.js';
 import { type Auth } from './auth.instance.js';
 import { AUTH_INSTANCE } from './auth.types.js';
 
@@ -17,36 +18,45 @@ import { AUTH_INSTANCE } from './auth.types.js';
  */
 @Controller()
 export class AuthController {
-  constructor(@Inject(AUTH_INSTANCE) private readonly auth: Auth) {}
+  constructor(
+    @Inject(AUTH_INSTANCE) private readonly auth: Auth,
+    private readonly organizations: OrganizationService,
+  ) {}
 
   /**
-   * Returns the signed-in user, or null.
+   * Returns the signed-in user with their organizations, or null.
    *
    * Public and null-returning by design: the browser needs to distinguish
-   * "signed out" from "request failed", and a 401 here would make every
-   * first paint look like an error. `emailVerified` is included so the UI can
-   * route an unverified account to the confirmation screen rather than the
-   * dashboard.
+   * "signed out" from "request failed", and a 401 here would make every first
+   * paint look like an error. `emailVerified` is included so the UI can route
+   * an unverified account to the confirmation screen rather than the dashboard.
+   *
+   * Memberships are omitted until the address is confirmed — an unverified
+   * account cannot reach organization data anyway.
    */
   @Public()
   @RateLimit({ limit: 60, windowSeconds: 60, scope: 'session-read' })
   @Get('session')
-  async currentSession(@Req() request: Request): Promise<{ user: UserDto | null }> {
+  async currentSession(@Req() request: Request): Promise<SessionDto | { user: null }> {
     const result = await this.auth.api.getSession({
       headers: fromNodeHeaders(request.headers),
     });
 
     if (!result) return { user: null };
 
-    return {
-      user: {
-        id: result.user.id,
-        name: result.user.name,
-        email: result.user.email,
-        emailVerified: result.user.emailVerified,
-        image: result.user.image ?? null,
-        createdAt: result.user.createdAt.toISOString(),
-      },
+    const user: UserDto = {
+      id: result.user.id,
+      name: result.user.name,
+      email: result.user.email,
+      emailVerified: result.user.emailVerified,
+      image: result.user.image ?? null,
+      createdAt: result.user.createdAt.toISOString(),
     };
+
+    if (!user.emailVerified) {
+      return { user, memberships: [] };
+    }
+
+    return { user, memberships: await this.organizations.listForUser(user.id) };
   }
 }

@@ -1,4 +1,5 @@
 import type { RequestAuthContext } from '../auth/auth.types.js';
+import type { OrganizationContext } from '../organizations/organization.types.js';
 
 /**
  * Express request augmentations owned by SiteOps middleware and guards.
@@ -12,6 +13,8 @@ declare global {
       id: string;
       /** Set by AuthGuard on every non-public route. Absent on public routes. */
       auth?: RequestAuthContext;
+      /** Set by OrganizationGuard on routes that declare a permission. */
+      organization?: OrganizationContext;
     }
   }
 }

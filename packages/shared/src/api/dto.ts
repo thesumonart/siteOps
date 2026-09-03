@@ -169,3 +169,16 @@ export interface DashboardStatsDto {
   readonly averageResponseTimeMs24h: number | null;
   readonly openIncidents: number;
 }
+
+/**
+ * Everything the browser needs to render the shell on first paint: who is
+ * signed in, which organizations they belong to, and what they may do in each.
+ *
+ * Permissions are resolved server-side and sent down so the UI can hide actions
+ * it would not be allowed to perform. They are a presentation aid only — the
+ * API re-checks every one of them on the request itself.
+ */
+export interface SessionDto {
+  readonly user: UserDto;
+  readonly memberships: readonly OrganizationMembershipDto[];
+}
