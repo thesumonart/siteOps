@@ -66,6 +66,18 @@ const ERROR_CODE_MAP: Readonly<Record<string, CheckErrorType>> = {
   DEPTH_ZERO_SELF_SIGNED_CERT: 'ssl_error',
   SELF_SIGNED_CERT_IN_CHAIN: 'ssl_error',
   ERR_SSL_WRONG_VERSION_NUMBER: 'ssl_error',
+  /*
+   * OpenSSL's chain-verification codes, surfaced by Node verbatim. A site
+   * serving a leaf certificate without its intermediates is the single most
+   * common TLS misconfiguration in the wild — browsers often paper over it
+   * from cache, so a monitor that reported it as a generic failure would be
+   * unhelpful exactly where it is most useful.
+   */
+  UNABLE_TO_GET_ISSUER_CERT_LOCALLY: 'ssl_error',
+  UNABLE_TO_GET_ISSUER_CERT: 'ssl_error',
+  CERT_UNTRUSTED: 'ssl_error',
+  CERT_NOT_YET_VALID: 'ssl_error',
+  CERT_REVOKED: 'ssl_error',
 };
 
 function truncate(message: string): string {
@@ -91,8 +103,16 @@ function messageOf(error: unknown): string {
   return 'Unknown error';
 }
 
-/** Walks the cause chain, since undici wraps socket errors. */
-function classifyError(error: unknown): { type: CheckErrorType; message: string } {
+/**
+ * Maps a thrown error onto the check taxonomy, walking the cause chain because
+ * undici wraps socket and TLS errors rather than rethrowing them.
+ *
+ * Exported so the taxonomy can be tested directly. Several of these codes only
+ * occur against hosts we cannot conjure locally — an incomplete certificate
+ * chain, a revoked certificate — and this project does not point its test
+ * suite at real websites to reach them.
+ */
+export function classifyError(error: unknown): { type: CheckErrorType; message: string } {
   let current: unknown = error;
 
   for (let depth = 0; depth < 5 && current !== undefined && current !== null; depth += 1) {

@@ -39,6 +39,9 @@ const INCIDENT_TYPE_BY_ERROR: Readonly<Partial<Record<CheckErrorType, IncidentTy
   http_error: 'http_error',
   connection_refused: 'connection_error',
   connection_reset: 'connection_error',
+  // A failed TLS handshake is a failure to establish the connection, and
+  // `IncidentType` has no finer bucket for it than that.
+  ssl_error: 'connection_error',
 };
 
 function incidentTypeFor(errorType: CheckErrorType | null): IncidentType {
