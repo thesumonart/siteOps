@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
   // linting is a separate CI step.
   typescript: { ignoreBuildErrors: false },
   poweredByHeader: false,
+  /*
+   * Next 16 writes an AGENTS.md and CLAUDE.md into this directory on every dev
+   * start. This repository already documents its own conventions in the root
+   * CLAUDE.md, and a generated file that restates framework defaults next to a
+   * hand-written one that states deliberate exceptions is worse than no file.
+   */
+  agentRules: false,
   transpilePackages: ['@siteops/shared'],
   // Returns a resolved promise rather than being `async`: Next requires a
   // Promise here, but there is nothing to await.
