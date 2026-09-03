@@ -1,0 +1,135 @@
+# Security
+
+## Threat model
+
+SiteOps accepts URLs from users and fetches them on a schedule from inside our infrastructure. That
+single fact makes **SSRF the most serious risk in the product** — more serious than the usual
+web-app concerns, because the attacker does not need an account compromise to abuse it, only the
+ability to add a website.
+
+The other standing risks are tenant crossing (reading another agency's client data) and credential
+attacks against the sign-in form.
+
+## SSRF defence
+
+Two independent layers. Neither is sufficient alone, and the second is the one that actually holds.
+
+### Layer 1 — URL validation, at creation time
+
+`normalizeWebsiteUrl()` in `@siteops/shared` rejects, before anything is stored:
+
+- any scheme other than `http:` and `https:` — `file:`, `ftp:`, `javascript:`, `data:`, `gopher:`
+- embedded credentials (`https://user:pass@host`), which would otherwise be logged and emailed
+- hostnames that are internal by definition: `localhost`, `*.local`, `*.internal`, `*.corp`,
+  `*.lan`, `*.home.arpa`, `metadata.google.internal`, `instance-data`, `*.onion`
+- single-label hostnames such as `intranet`, which resolve through a search domain
+- IP literals in any non-public range, IPv4 and IPv6 alike
+
+Notation tricks are handled by refusing to normalize them: `0177.0.0.1` and `127.1` are rejected as
+malformed rather than parsed, because some resolvers read them as loopback while a naive blocklist
+does not.
+
+This layer exists for **user feedback** — it tells someone immediately that a URL cannot be
+monitored. It is not a security boundary, because DNS can change after the URL is stored.
+
+### Layer 2 — address validation, at connection time
+
+The authoritative check. Immediately before the worker opens a socket, the resolved IP address is
+passed through `classifyIpAddress()`, and the connection proceeds only to an address that is
+provably public unicast.
+
+This is the layer that stops **DNS rebinding**: an attacker's domain may answer `93.184.216.34`
+when the website is added and `169.254.169.254` an hour later, and the second answer is rejected at
+connect time. Every redirect hop is re-validated the same way — a public URL that 302s to
+`http://169.254.169.254/latest/meta-data/` is refused mid-chain.
+
+### Blocked ranges
+
+IPv4: `0.0.0.0/8`, `10/8`, `100.64/10` (CGNAT, which contains Alibaba's `100.100.100.200`
+metadata endpoint), `127/8`, `169.254/16` (AWS, GCP and Azure metadata), `172.16/12`, `192.0.0/24`,
+`192.0.2/24`, `192.88.99/24`, `192.168/16`, `198.18/15`, `198.51.100/24`, `203.0.113/24`,
+`224/4`, `240/4`.
+
+IPv6: `::`, `::1`, `fc00::/7`, `fe80::/10`, `ff00::/8`, `100::/64`, `2001:db8::/32`. Addresses that
+_carry_ an IPv4 address are unwrapped and judged by it: IPv4-mapped (`::ffff:127.0.0.1`),
+IPv4-compatible, NAT64 (`64:ff9b::/96`) and 6to4 (`2002::/16`). Zone indices are stripped, since
+`fe80::1%eth0` is no more public than `fe80::1`.
+
+Anything that does not parse as an IP address is blocked. The default is deny.
+
+### Tests
+
+`packages/shared/src/url/ip.test.ts` and `normalize.test.ts` assert every range above, plus the
+notation bypasses. `MONITOR_ALLOW_PRIVATE_ADDRESSES` exists so the integration suite can reach a
+mock server on loopback, and the worker's environment schema **refuses to start in production**
+when it is set — that refusal is itself unit-tested.
+
+## Tenant isolation
+
+- Every organization-scoped document stores `organizationId`, and every repository method requires
+  it as an argument. There is no query path that omits it.
+- The organization id supplied by the client is treated as a hint. Membership is resolved from the
+  session on every request before any data is read.
+- A resource in another organization returns `404`, never `403`. Telling an attacker that an id
+  exists but is not theirs is an enumeration oracle.
+- Roles map to permissions in `@siteops/shared`; controllers check permissions, never role names,
+  so a permission change happens in one file.
+
+## Authentication
+
+Password hashing and session management are handled by Better Auth, not by hand. Sessions are
+opaque tokens in `HttpOnly`, `Secure`, `SameSite=Lax` cookies — never in `localStorage`, where any
+XSS would read them.
+
+- Passwords: minimum 12 characters. No character-class rule; it pushes people toward `P@ssw0rd!`
+  without adding entropy.
+- Email verification and password reset use single-use, expiring tokens.
+- Changing a password invalidates other sessions.
+- Sign-in failures are reported identically whether or not the account exists.
+
+## Rate limiting
+
+Applied globally by `RateLimitGuard`, keyed by client address **and** route, so exhausting the
+sign-in budget does not lock the same client out of the dashboard. Authentication routes carry a
+much tighter budget than reads.
+
+**Known limitation:** counters are per-process. With _n_ API instances the effective limit is
+_n_ × the configured value. This is accepted for the initial single-instance deployment and
+documented in the limiter's own source. Moving to a shared store means re-implementing
+`RateLimiter` — the guard and every call site stay as they are.
+
+## Transport and headers
+
+`helmet` sets `X-Content-Type-Options`, `Referrer-Policy: no-referrer`, `frame-ancestors 'none'`
+and, in production, HSTS. The API serves JSON only, so its CSP is `default-src 'none'`.
+
+CORS uses an explicit origin allowlist and never reflects the request origin, because these
+requests carry credentials.
+
+## Error handling
+
+`AllExceptionsFilter` is the only thing that writes an error response. Stack traces, driver errors,
+file paths and connection strings are logged server-side and replaced with a generic message and a
+stable error code. Validation errors are the one exception: they name the offending field, because
+the user needs to know which one.
+
+## Logging
+
+Redaction is configured on the logger, not left to call sites: cookies, `authorization` headers,
+`password`, `token`, `secret`, `MONGODB_URI`, `AUTH_SECRET` and `RESEND_API_KEY` are censored
+before anything is written. Request paths are logged without their query string, since verification
+and reset tokens travel there.
+
+## Secrets
+
+Only `.env.example` is committed. Every variable is validated at startup by a Zod schema, and a
+missing or malformed required value stops the process rather than letting it run misconfigured.
+Production additionally requires `https` for `APP_URL` (session cookies are `Secure`-only) and a
+mail provider (an outage nobody is told about is not monitoring).
+
+Nothing secret is exposed to the browser. Only `NEXT_PUBLIC_*` variables reach the client bundle,
+and an ESLint rule blocks direct `process.env` access outside the env modules.
+
+## Reporting
+
+This is a private project. Security issues go to the repository owner.
