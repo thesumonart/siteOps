@@ -16,15 +16,15 @@ for a feature that is not implemented.
   status components
 - **Worker foundation** — validated configuration, structured logging, health probes, graceful
   shutdown
+- **Authentication** — registration, sign-in, sign-out, email verification, password reset,
+  sessions, server-side route protection, transactional email
 
 ## In progress
 
-- **Authentication** — registration, sign-in, sign-out, email verification, password reset,
-  sessions, protected routes
+- **Organizations** — creation, switching, members, roles, permissions, tenant isolation
 
 ## Next
 
-- **Organizations** — creation, switching, members, roles, permissions, tenant isolation
 - **Website management** — add, edit, delete, pause and resume monitoring
 - **Monitoring engine** — scheduler, HTTP checker, SSRF address validation, persistence,
   concurrency control

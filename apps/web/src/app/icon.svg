@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="SiteOps">
+  <title>SiteOps</title>
+  <!--
+    A filled tile rather than a bare glyph: at 16px a thin line mark disappears
+    against a browser tab, while a solid shape stays recognisable.
+    The pulse echoes the wordmark's Activity icon.
+  -->
+  <rect width="32" height="32" rx="7" fill="#4f46e5" />
+  <path
+    d="M6 16.5h3.6l2.6-7.2 4.2 13.4 2.7-8.3 1.5 2.1H26"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="2.4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

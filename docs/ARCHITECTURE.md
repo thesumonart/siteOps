@@ -106,6 +106,21 @@ yet support.
 would silently disable every type-aware lint rule, which is most of the value of the lint setup.
 Revisit when `typescript-eslint` ships support.
 
+### Authentication is mounted outside Nest
+
+Better Auth serves `/api/auth/*` as raw Express middleware, registered before any
+body parser, because its handler reads the unparsed request stream. A Nest controller would have
+consumed the body first and every sign-in would arrive empty.
+
+Two consequences follow. Its routes never reach Nest's guards, so rate limiting for them is applied
+by a dedicated middleware using the same limiter. And its responses — successes and failures alike
+— are rewritten into the SiteOps envelope by `auth.handler.ts`, so the whole API speaks one shape
+and the browser needs one client. Redirects and empty bodies pass through untouched, because the
+email verification link depends on a real `302`.
+
+That rewriting is also why Better Auth's browser client is not used: the web app has one API client
+and one `ApiError` type for every endpoint.
+
 ### Jobs without Redis
 
 The worker claims work with an atomic `findOneAndUpdate` that sets a lease on the website document.

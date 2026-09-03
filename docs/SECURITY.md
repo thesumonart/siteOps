@@ -85,7 +85,14 @@ XSS would read them.
   without adding entropy.
 - Email verification and password reset use single-use, expiring tokens.
 - Changing a password invalidates other sessions.
-- Sign-in failures are reported identically whether or not the account exists.
+- Sign-in failures are reported identically whether or not the account exists, and a password-reset
+  request answers the same way for an unknown address.
+- Better Auth checks for a duplicate email before inserting, which is not atomic. A unique index on
+  `user.email` (applied by `indexes:sync`, see `packages/database/src/auth-indexes.ts`) makes two
+  concurrent sign-ups for one address impossible at the storage layer.
+- The upstream error message is never forwarded to the client. Codes are translated to the
+  documented set and the wording is ours, so an unmapped internal failure cannot leak a driver
+  error or a connection string.
 
 ## Rate limiting
 

@@ -1,4 +1,20 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { NextConfig } from 'next';
+
+/*
+ * SiteOps keeps one `.env` at the repository root so the web app, the API and
+ * the worker cannot drift apart. Next only looks inside its own directory, so
+ * the root file is loaded here — before the config is read and before Next
+ * forks its build workers, which inherit the populated environment.
+ *
+ * Values already present in the environment win, so a real deployment (Vercel,
+ * CI) is never overridden by a stray local file.
+ */
+const rootEnvPath = fileURLToPath(new URL('../../.env', import.meta.url));
+if (existsSync(rootEnvPath)) {
+  process.loadEnvFile(rootEnvPath);
+}
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

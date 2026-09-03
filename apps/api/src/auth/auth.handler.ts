@@ -94,6 +94,15 @@ export function createAuthHandler(auth: Auth) {
           return;
         }
 
+        // Successful auth payloads are wrapped too, so the whole API speaks one
+        // envelope and the browser client needs a single unwrapping path.
+        // Redirects and empty bodies are passed through untouched — the
+        // verification link relies on a real 302 with its Location header.
+        if (authResponse.status < 400 && isJson && text.length > 0) {
+          response.json({ success: true, data: JSON.parse(text) as unknown });
+          return;
+        }
+
         if (text.length === 0) {
           response.end();
           return;

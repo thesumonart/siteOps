@@ -29,6 +29,12 @@ export const registerSchema = z.object({
   password: passwordSchema,
 });
 
+/**
+ * `z.input` and `z.infer` differ wherever a schema has a `.default()` or a
+ * transform: the browser form holds the *input* shape while the parsed result
+ * is the *output* shape. React Hook Form needs both, so both are exported.
+ */
+export type RegisterFormValues = z.input<typeof registerSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const loginSchema = z.object({
@@ -37,12 +43,14 @@ export const loginSchema = z.object({
   rememberMe: z.boolean().default(true),
 });
 
+export type LoginFormValues = z.input<typeof loginSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
 });
 
+export type ForgotPasswordFormValues = z.input<typeof forgotPasswordSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z
@@ -56,6 +64,7 @@ export const resetPasswordSchema = z
     path: ['confirmPassword'],
   });
 
+export type ResetPasswordFormValues = z.input<typeof resetPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 
 export const changePasswordSchema = z

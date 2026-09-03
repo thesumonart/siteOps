@@ -28,6 +28,12 @@ Version choices that are deliberate and must not be "upgraded" casually:
 - **No `@nestjs/throttler`.** It does not support NestJS 12. Rate limiting is hand-written in
   `apps/api/src/common/rate-limit`.
 - **No `@nestjs/cli`.** The API builds with plain `tsc`, which emits decorator metadata.
+- **ESM everywhere on the Node side.** NestJS 12 and Better Auth are both ESM-only, so
+  `apps/api`, `apps/worker`, `packages/shared` and `packages/database` are `"type": "module"` with
+  `NodeNext` resolution. Relative imports need explicit `.js` specifiers.
+- **Better Auth is mounted as raw middleware** in `main.ts`, before the body parser, and its
+  responses are rewritten into the SiteOps envelope. Do not move it into a controller and do not
+  add Better Auth's browser client — the web app has one API client.
 
 ## Layout
 
