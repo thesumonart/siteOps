@@ -169,9 +169,3 @@ export interface DashboardStatsDto {
   readonly averageResponseTimeMs24h: number | null;
   readonly openIncidents: number;
 }
-
-export interface SessionDto {
-  readonly user: UserDto;
-  readonly memberships: readonly OrganizationMembershipDto[];
-  readonly activeOrganizationId: string | null;
-}

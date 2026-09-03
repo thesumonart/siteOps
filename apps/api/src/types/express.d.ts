@@ -1,5 +1,7 @@
+import type { RequestAuthContext } from '../auth/auth.types.js';
+
 /**
- * Express request augmentations owned by SiteOps middleware.
+ * Express request augmentations owned by SiteOps middleware and guards.
  *
  * Declared centrally so a handler cannot read a field that nothing sets.
  */
@@ -8,6 +10,8 @@ declare global {
     interface Request {
       /** Correlation id assigned by RequestContextMiddleware. */
       id: string;
+      /** Set by AuthGuard on every non-public route. Absent on public routes. */
+      auth?: RequestAuthContext;
     }
   }
 }

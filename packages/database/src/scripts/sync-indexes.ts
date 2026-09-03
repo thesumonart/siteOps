@@ -9,6 +9,7 @@ import {
   WebsiteCheckModel,
   WebsiteModel,
 } from '../models/index.js';
+import { syncAuthIndexes } from '../auth-indexes.js';
 import { connectToDatabase, disconnectFromDatabase } from '../connection.js';
 
 /**
@@ -44,6 +45,11 @@ async function main(): Promise<void> {
     const indexes = await model.listIndexes();
     console.log(`${model.collection.collectionName}: ${indexes.length} indexes`);
   }
+
+  // The auth collections are created by Better Auth but indexed here; see
+  // auth-indexes.ts for why uniqueness cannot be left to the library.
+  const authIndexCount = await syncAuthIndexes();
+  console.log(`auth collections: ${authIndexCount} indexes`);
 
   await disconnectFromDatabase();
 }

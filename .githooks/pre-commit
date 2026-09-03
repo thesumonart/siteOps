@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Formats and lints only the staged files. Kept fast on purpose: the full
+# lint, typecheck, test and build matrix runs in CI, not on every commit.
+pnpm exec lint-staged

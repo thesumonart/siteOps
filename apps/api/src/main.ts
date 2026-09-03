@@ -4,10 +4,14 @@ import { HttpStatus } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { ApiErrorResponse } from '@siteops/shared';
-import type { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
+import { createAuthHandler } from './auth/auth.handler.js';
+import { AUTH_BASE_PATH, type Auth } from './auth/auth.instance.js';
+import { authRateLimitMiddleware } from './auth/auth.rate-limit.js';
+import { AUTH_INSTANCE } from './auth/auth.types.js';
 import { createLogger } from './common/logging/logger.js';
 import { DatabaseModule } from './database.module.js';
 import { env, isProduction, trustedOrigins } from './config/env.js';
@@ -23,7 +27,10 @@ async function bootstrap(): Promise<void> {
     // Requests are logged by pino via the structured logger; Nest's own
     // console logger would duplicate them in a different format.
     logger: false,
-    bodyParser: true,
+    // Better Auth reads the raw request stream. Nest's body parser would
+    // consume it first and leave every sign-in with an empty body, so parsing
+    // is registered manually below — after the auth routes.
+    bodyParser: false,
   });
 
   app.enableShutdownHooks();
@@ -59,6 +66,21 @@ async function bootstrap(): Promise<void> {
   });
 
   app.setGlobalPrefix('api', { exclude: ['health', 'ready'] });
+
+  /*
+   * Order matters here.
+   *
+   * Better Auth is mounted before any body parser because its handler consumes
+   * the raw stream. Its own rate limiting runs first, since Nest's guard never
+   * sees these routes. JSON parsing is registered afterwards, so every Nest
+   * controller still receives a parsed body.
+   */
+  const auth = app.get<Auth>(AUTH_INSTANCE);
+  app.use(AUTH_BASE_PATH, authRateLimitMiddleware(), createAuthHandler(auth));
+
+  // A monitoring payload is small; a generous limit only helps an attacker.
+  app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
   // Routes are registered during init. Registering the fallback afterwards puts
   // it last, so an unmatched path returns the documented JSON envelope instead

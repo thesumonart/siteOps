@@ -20,11 +20,13 @@
     "@siteops/database": "workspace:*",
     "@siteops/shared": "workspace:*",
     "better-auth": "catalog:",
+    "express": "5.2.1",
     "helmet": "8.3.0",
     "mongoose": "catalog:",
     "pino": "10.3.1",
     "pino-http": "11.0.0",
     "reflect-metadata": "0.2.2",
+    "resend": "6.25.0",
     "rxjs": "7.8.2",
     "zod": "catalog:"
   },
