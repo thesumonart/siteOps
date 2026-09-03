@@ -137,7 +137,7 @@ export class WebsiteRepository {
     return WebsiteModel.findOneAndUpdate(
       { _id: websiteObjectId, organizationId },
       { $set: changes },
-      { new: true },
+      { returnDocument: 'after' },
     )
       .lean<WebsiteRecord>()
       .exec();

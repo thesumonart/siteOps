@@ -198,7 +198,11 @@ export class OrganizationRepository {
     const orgObjectId = toObjectId(organizationId);
     if (!orgObjectId) return null;
 
-    return OrganizationModel.findByIdAndUpdate(orgObjectId, { $set: changes }, { new: true })
+    return OrganizationModel.findByIdAndUpdate(
+      orgObjectId,
+      { $set: changes },
+      { returnDocument: 'after' },
+    )
       .lean<OrganizationRecord>()
       .exec();
   }

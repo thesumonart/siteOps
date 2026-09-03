@@ -207,7 +207,7 @@ export class MemberRepository {
           acceptedByUserId: null,
         } satisfies Partial<InvitationAttributes>,
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: 'after' },
     )
       .lean()
       .exec();
