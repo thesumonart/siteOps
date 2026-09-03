@@ -1,0 +1,48 @@
+# Never copy secrets or local state into the build context.
+.env
+.env.*
+!.env.example
+
+# Build output and caches are produced inside the image, never copied in.
+node_modules
+**/node_modules
+dist
+**/dist
+.next
+**/.next
+.next-e2e
+**/.next-e2e
+.turbo
+**/.turbo
+*.tsbuildinfo
+# Docker matches these patterns from the context root, not recursively, so a
+# nested build-info needs its own entry. Without it TypeScript sees a stale
+# build-info next to a dist that was excluded, concludes the output is current
+# and emits nothing — a build that succeeds and produces no JavaScript.
+**/*.tsbuildinfo
+
+# Test artefacts
+coverage
+**/coverage
+test-results
+**/test-results
+playwright-report
+**/playwright-report
+blob-report
+**/blob-report
+
+# Not needed to build or run the services
+.git
+.github
+.githooks
+.vscode
+.idea
+docs
+README.md
+CLAUDE.md
+AGENTS.md
+docker-compose.yml
+Dockerfile
+.dockerignore
+apps/web/e2e
+apps/web/playwright.config.ts
