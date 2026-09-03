@@ -29,7 +29,17 @@ export const baseConfig = tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        // Config files live outside the tsconfig `include` globs, so they are
+        // linted against the default project rather than failing to resolve.
+        projectService: {
+          allowDefaultProject: [
+            '*.config.ts',
+            '*.config.mts',
+            '*.config.mjs',
+            '*.config.js',
+            'eslint.config.mjs',
+          ],
+        },
         tsconfigRootDir: process.cwd(),
       },
     },

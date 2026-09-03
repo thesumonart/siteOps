@@ -9,7 +9,8 @@
     "./eslint/next": "./eslint/next.mjs",
     "./tsconfig/library.json": "./tsconfig/library.json",
     "./tsconfig/node.json": "./tsconfig/node.json",
-    "./tsconfig/nextjs.json": "./tsconfig/nextjs.json"
+    "./tsconfig/nextjs.json": "./tsconfig/nextjs.json",
+    "./tsconfig/base.json": "./tsconfig/base.json"
   },
   "dependencies": {
     "@eslint/js": "10.0.1",

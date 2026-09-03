@@ -1,12 +1,13 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "SiteOps library",
-  "extends": "../../../tsconfig.base.json",
+  "extends": "./base.json",
   "compilerOptions": {
     "composite": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "isolatedModules": false
   }
 }
