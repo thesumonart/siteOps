@@ -2,15 +2,6 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# Packages with install scripts must be allowlisted explicitly (pnpm >= 10).
-onlyBuiltDependencies:
-  - "@tailwindcss/oxide"
-  - esbuild
-  - sharp
-  - unrs-resolver
-  - "@nestjs/core"
-  - "@swc/core"
-
 # Single source of truth for dependency versions across every workspace package.
 # Referenced as `"typescript": "catalog:"` in package.json files.
 catalog:
@@ -37,6 +28,9 @@ catalog:
 
   # Data
   mongoose: 9.9.4
+  # Must track the driver version mongoose depends on (~7.5), since the Db
+  # handle returned by the connection is passed straight to the auth adapter.
+  mongodb: 7.5.0
 
   # Auth
   better-auth: 1.7.2
@@ -44,3 +38,12 @@ catalog:
   # Testing
   vitest: 4.1.11
   "@vitest/coverage-v8": 4.1.11
+
+# Dependencies permitted to run install scripts (pnpm >= 11). Everything else
+# is blocked, so a transitive package cannot execute code during `pnpm install`.
+# These are native toolchain packages that legitimately need a postinstall step.
+allowBuilds:
+  "@tailwindcss/oxide": true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true

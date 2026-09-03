@@ -1,0 +1,41 @@
+{
+  "name": "@siteops/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "clean": "rimraf dist .turbo *.tsbuildinfo",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "tsx src/scripts/seed.ts",
+    "indexes:sync": "tsx src/scripts/sync-indexes.ts"
+  },
+  "dependencies": {
+    "@siteops/shared": "workspace:*",
+    "mongodb": "catalog:",
+    "mongoose": "catalog:"
+  },
+  "devDependencies": {
+    "@siteops/config": "workspace:*",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "rimraf": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
