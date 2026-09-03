@@ -12,9 +12,10 @@ attacks against the sign-in form.
 
 ## SSRF defence
 
-Two independent layers. Neither is sufficient alone, and the second is the one that actually holds.
+Two layers. **Neither is a fallback for the other** — they cover different attacks, and each is
+the only defence against its own. Weakening either one opens a hole the other does not close.
 
-### Layer 1 — URL validation, at creation time
+### Layer 1 — URL validation, at creation time and on every redirect hop
 
 `normalizeWebsiteUrl()` in `@siteops/shared` rejects, before anything is stored:
 
@@ -29,8 +30,10 @@ Notation tricks are handled by refusing to normalize them: `0177.0.0.1` and `127
 malformed rather than parsed, because some resolvers read them as loopback while a naive blocklist
 does not.
 
-This layer exists for **user feedback** — it tells someone immediately that a URL cannot be
-monitored. It is not a security boundary, because DNS can change after the URL is stored.
+At creation time this is user feedback: it tells someone immediately that a URL cannot be
+monitored. **On a redirect hop it is a security boundary**, and the only one that applies when the
+hop target is an IP literal — see the note below. It is not sufficient on its own, because DNS can
+change after the URL is stored.
 
 ### Layer 2 — address validation, at connection time
 
@@ -40,8 +43,32 @@ provably public unicast.
 
 This is the layer that stops **DNS rebinding**: an attacker's domain may answer `93.184.216.34`
 when the website is added and `169.254.169.254` an hour later, and the second answer is rejected at
-connect time. Every redirect hop is re-validated the same way — a public URL that 302s to
-`http://169.254.169.254/latest/meta-data/` is refused mid-chain.
+connect time.
+
+### Why neither layer is redundant
+
+The guard in layer 2 is installed as the socket's `dns.lookup`. Node only consults a custom lookup
+for a **hostname**: when the host is already an IP literal — `net.isIP()` is truthy — it connects
+straight to it and the lookup function is never called. So a redirect to
+`http://169.254.169.254/latest/meta-data/` reaches the metadata endpoint without layer 2 ever
+seeing it.
+
+What refuses that request is layer 1, re-run on the hop URL before the request is issued. That is
+why the string validation runs on **every hop**, not only at creation, and why it must not be
+relaxed to "we check the resolved IP anyway" — for an IP literal there is no resolution step to
+check.
+
+Conversely, layer 1 cannot see a hostname's resolved address, so it cannot stop rebinding. The
+split is:
+
+| Hop target                                  | Caught by                             |
+| ------------------------------------------- | ------------------------------------- |
+| IP literal in a blocked range               | Layer 1, per hop (layer 2 never runs) |
+| Hostname that resolves to a blocked address | Layer 2, at connect time              |
+
+A regression test covers the first row specifically: a mock server that 302s to
+`169.254.169.254`. It was written because an earlier revision of the loopback test-mode exemption
+let exactly that through.
 
 ### Blocked ranges
 
@@ -60,9 +87,15 @@ Anything that does not parse as an IP address is blocked. The default is deny.
 ### Tests
 
 `packages/shared/src/url/ip.test.ts` and `normalize.test.ts` assert every range above, plus the
-notation bypasses. `MONITOR_ALLOW_PRIVATE_ADDRESSES` exists so the integration suite can reach a
-mock server on loopback, and the worker's environment schema **refuses to start in production**
-when it is set — that refusal is itself unit-tested.
+notation bypasses. The worker's `address-guard.test.ts`, `safe-lookup.test.ts` and
+`http-checker.test.ts` cover the connect-time guard and the redirect chain, including chains that
+turn toward private address space mid-way.
+
+`MONITOR_ALLOW_PRIVATE_ADDRESSES` exists so the integration suite can reach a mock server on
+loopback, and the worker's environment schema **refuses to start in production** when it is set —
+that refusal is itself unit-tested. The exemption it grants is deliberately narrow: it permits
+loopback only, not the blocked ranges in general, so a redirect toward a metadata endpoint is
+refused even in a test run.
 
 ## Tenant isolation
 

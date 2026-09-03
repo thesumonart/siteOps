@@ -20,7 +20,9 @@ Under active development. See [docs/ROADMAP.md](docs/ROADMAP.md) for what is bui
 | Authentication              | Done        |
 | Organizations and roles     | Done        |
 | Website management          | Done        |
-| Monitoring engine           | In progress |
+| Monitoring engine           | Done        |
+| Incidents and notifications | Done        |
+| Dashboard                   | In progress |
 
 ## Requirements
 

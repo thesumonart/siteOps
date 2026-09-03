@@ -22,13 +22,19 @@ for a feature that is not implemented.
   isolation, audit logging
 - **Website management** — add, edit, delete, pause and resume monitoring, search, filtering and
   pagination, plan limits
+- **Monitoring engine** — lease-based scheduler, HTTP checker with per-hop SSRF address
+  validation, retries, persistence, concurrency control
+- **Incidents** — failure and recovery thresholds, creation, resolution, deduplication enforced by
+  a unique index
+- **Notifications** — dispatch service, outage and recovery email templates, per-organization
+  preferences, two-layer deduplication
+
+Incidents and notifications shipped alongside the monitoring engine rather than after it: an
+engine that detects an outage and tells nobody is not a working feature, and the three share one
+transaction-free idempotency design that is only testable as a whole.
 
 ## In progress
 
-- **Monitoring engine** — scheduler, HTTP checker, SSRF address validation, persistence,
-  concurrency control
-- **Incidents** — failure and recovery thresholds, creation, resolution, deduplication, history
-- **Notifications** — service, email templates, preferences, deduplication
 - **Dashboard** — overview, websites, website detail, incidents, settings, charts, filters
 - **Hardening and deployment** — security review, indexes, retention, E2E tests, production deploy
 

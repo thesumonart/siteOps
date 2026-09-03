@@ -57,11 +57,11 @@ at all. If a rule cannot be reached without a `Request` object, it is in the wro
 
 ## Packages
 
-| Package             | Purpose                                                                                      |
-| ------------------- | -------------------------------------------------------------------------------------------- |
-| `@siteops/shared`   | Isomorphic domain: statuses, roles, permissions, Zod schemas, URL/IP validation, uptime math |
-| `@siteops/database` | Mongoose models, the shared connection, index definitions                                    |
-| `@siteops/config`   | ESLint flat configs and TypeScript presets                                                   |
+| Package             | Purpose                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `@siteops/shared`   | Isomorphic domain: statuses, roles, permissions, Zod schemas, URL/IP validation, uptime math, email rendering |
+| `@siteops/database` | Mongoose models, the shared connection, index definitions                                                     |
+| `@siteops/config`   | ESLint flat configs and TypeScript presets                                                                    |
 
 `@siteops/shared` is imported by all three apps. That is what makes a validation rule identical in
 the browser form, the API pipe and the worker — there is only one copy of it.
@@ -120,6 +120,17 @@ email verification link depends on a real `302`.
 
 That rewriting is also why Better Auth's browser client is not used: the web app has one API client
 and one `ApiError` type for every endpoint.
+
+### Email rendering is shared, not duplicated
+
+Two processes send transactional email: the API (verification, password reset, invitations) and the
+worker (outage and recovery alerts). Both render the same branded layout, and that layout escapes
+user-controlled values — a website named `<img onerror=...>` reaches a recipient's inbox.
+
+An escaping function with two implementations is an escaping function that will be fixed in one of
+them. The layout, the plain-text renderer and the message types live in `@siteops/shared/email`,
+and each app keeps only its own templates and its own provider wiring — the worker's `EmailService`
+is a plain class because the worker has no DI container, but its behaviour matches the API's.
 
 ### Jobs without Redis
 
