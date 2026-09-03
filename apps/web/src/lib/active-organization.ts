@@ -28,6 +28,21 @@ export function writeActiveOrganizationCookie(organizationId: string): void {
 }
 
 /**
+ * Makes the browser's cookie agree with the organization the server resolved.
+ *
+ * The server falls back to the first membership when no cookie is set, but the
+ * browser cannot: `apiRequest` reads this cookie to decide which organization
+ * a request is for, and without it every client-side query is rejected. That is
+ * exactly the state a brand-new account is in on its first visit, and anyone
+ * who clears their cookies returns to it.
+ */
+export function syncActiveOrganizationCookie(organizationId: string): void {
+  if (typeof document === 'undefined') return;
+  if (readActiveOrganizationCookie() === organizationId) return;
+  writeActiveOrganizationCookie(organizationId);
+}
+
+/**
  * Picks the organization to show.
  *
  * The stored preference wins only if the person is still a member of it — a

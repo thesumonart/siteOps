@@ -1,13 +1,23 @@
 'use client';
 
 import type { OrganizationMembershipDto, Permission, UserDto } from '@siteops/shared';
-import { Activity, Globe, LayoutDashboard, Menu, Users, X } from 'lucide-react';
+import {
+  Activity,
+  Bell,
+  Globe,
+  LayoutDashboard,
+  Menu,
+  TriangleAlert,
+  Users,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { OrganizationSwitcher } from '@/components/layout/organization-switcher';
 import { SignOutButton } from '@/components/layout/sign-out-button';
+import { syncActiveOrganizationCookie } from '@/lib/active-organization';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -19,13 +29,25 @@ interface NavItem {
 }
 
 /**
- * Only routes that exist are listed. Websites, incidents and notifications join
- * this list as they are built, rather than sitting here as dead links.
+ * Only routes that exist are listed — never a placeholder for something not
+ * built yet.
  */
 const NAV_ITEMS: readonly NavItem[] = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/websites', label: 'Websites', icon: Globe, permission: 'website:read' },
+  {
+    href: '/dashboard/incidents',
+    label: 'Incidents',
+    icon: TriangleAlert,
+    permission: 'incident:read',
+  },
   { href: '/dashboard/members', label: 'Members', icon: Users, permission: 'member:read' },
+  {
+    href: '/dashboard/settings',
+    label: 'Notifications',
+    icon: Bell,
+    permission: 'notification:read',
+  },
 ];
 
 export interface DashboardShellProps {
@@ -44,6 +66,17 @@ export function DashboardShell({
   children,
 }: DashboardShellProps): React.ReactElement {
   const pathname = usePathname();
+
+  /*
+   * Synchronised through a lazy `useState` initializer rather than an effect
+   * because it has to happen before the children mount: their queries fire on
+   * mount, and an effect in this component would run after them — the first
+   * render of a fresh session would fail every request, then silently work on
+   * the next one.
+   */
+  useState(() => {
+    syncActiveOrganizationCookie(activeOrganizationId);
+  });
 
   /*
    * The drawer remembers which route it was opened on, so any navigation —
