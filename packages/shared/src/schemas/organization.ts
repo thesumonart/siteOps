@@ -62,6 +62,12 @@ export const inviteMemberSchema = z.object({
 
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;
 
+export const acceptInvitationSchema = z.object({
+  token: z.string().min(1, 'This invitation link is invalid.').max(256),
+});
+
+export type AcceptInvitationInput = z.infer<typeof acceptInvitationSchema>;
+
 export const updateMemberRoleSchema = z.object({
   role: z.enum(ORGANIZATION_ROLES),
 });

@@ -75,6 +75,22 @@ when it is set — that refusal is itself unit-tested.
 - Roles map to permissions in `@siteops/shared`; controllers check permissions, never role names,
   so a permission change happens in one file.
 
+### Member management
+
+- Nobody may grant a role above their own (`canAssignRole`), which is the escalation path that
+  matters: without it an admin could invite or promote an owner and take over the tenant.
+- Peers _can_ manage each other (`canActOn` compares ranks with `>=`). Requiring a strictly higher
+  rank would make an organization with two owners unmanageable — neither could ever remove the
+  other.
+- Nobody may change their own role, so an owner cannot accidentally lock themselves out and an
+  admin cannot self-promote.
+- An organization must always keep one owner. Demoting or removing the last one is refused with
+  `CANNOT_REMOVE_LAST_OWNER`, because the alternative is a tenant nobody can administer.
+- Invitation tokens are 32 random bytes, emailed once and stored only as a SHA-256 hash — a leaked
+  database yields no working links. Accepting one requires _both_ the token and a session for the
+  address it was sent to, checked in constant time, so a forwarded link is useless to anyone else.
+  Tokens are single-use and expire after seven days.
+
 ## Authentication
 
 Password hashing and session management are handled by Better Auth, not by hand. Sessions are

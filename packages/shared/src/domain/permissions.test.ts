@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { hasEveryPermission, hasPermission, permissionsFor, PERMISSIONS } from './permissions.js';
-import { ORGANIZATION_ROLES, outranks, rankOf } from './roles.js';
+import { ORGANIZATION_ROLES, canActOn, canAssignRole, outranks, rankOf } from './roles.js';
 
 describe('role hierarchy', () => {
   it('ranks owner above admin above member', () => {
@@ -18,6 +18,29 @@ describe('role hierarchy', () => {
   it('lets an owner act on an admin but not the reverse', () => {
     expect(outranks('owner', 'admin')).toBe(true);
     expect(outranks('admin', 'owner')).toBe(false);
+  });
+});
+
+describe('member management rules', () => {
+  it('lets a role manage peers, so two owners are not deadlocked', () => {
+    // Requiring a strictly higher rank would make an organization with two
+    // owners unmanageable: neither could ever remove or demote the other.
+    expect(canActOn('owner', 'owner')).toBe(true);
+    expect(canActOn('admin', 'admin')).toBe(true);
+  });
+
+  it('never lets anyone manage a superior', () => {
+    expect(canActOn('admin', 'owner')).toBe(false);
+    expect(canActOn('member', 'admin')).toBe(false);
+    expect(canActOn('member', 'owner')).toBe(false);
+  });
+
+  it('caps an assignable role at the actor own rank', () => {
+    expect(canAssignRole('owner', 'owner')).toBe(true);
+    expect(canAssignRole('owner', 'member')).toBe(true);
+    // The escalation that matters: an admin minting an owner.
+    expect(canAssignRole('admin', 'owner')).toBe(false);
+    expect(canAssignRole('member', 'admin')).toBe(false);
   });
 });
 

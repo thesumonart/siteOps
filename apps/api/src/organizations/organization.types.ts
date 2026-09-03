@@ -10,6 +10,7 @@ import type { Types } from '@siteops/database';
 export interface OrganizationContext {
   readonly id: string;
   readonly objectId: Types.ObjectId;
+  readonly name: string;
   readonly slug: string;
   readonly plan: Plan;
   readonly role: OrganizationRole;

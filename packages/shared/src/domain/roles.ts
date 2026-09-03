@@ -34,3 +34,25 @@ export function outranks(actor: OrganizationRole, target: OrganizationRole): boo
 export function rankOf(role: OrganizationRole): number {
   return ROLE_RANK[role];
 }
+
+/**
+ * Whether `actor` may manage a member holding `target`.
+ *
+ * Peers are included on purpose. Requiring a strictly higher rank would mean
+ * that as soon as an organization has two owners, neither could ever remove or
+ * demote the other — the organization would be permanently stuck. Owners
+ * managing owners is safe because the last-owner rule is enforced separately.
+ */
+export function canActOn(actor: OrganizationRole, target: OrganizationRole): boolean {
+  return ROLE_RANK[actor] >= ROLE_RANK[target];
+}
+
+/**
+ * Whether `actor` may grant `role` to someone.
+ *
+ * Capped at the actor's own rank, so nobody can mint an account more powerful
+ * than themselves — the escalation path that matters.
+ */
+export function canAssignRole(actor: OrganizationRole, role: OrganizationRole): boolean {
+  return ROLE_RANK[actor] >= ROLE_RANK[role];
+}

@@ -57,6 +57,14 @@ Every index below exists for a named query. None were added speculatively.
 | `{nextCheckAt}` partial on `monitoringEnabled: true` | The scheduler's hot query. The partial filter keeps paused sites out of the index entirely |
 | `{organizationId, status}`                           | Dashboard status counters                                                                  |
 
+### `invitations`
+
+| Index                                                            | Purpose                                                                                                                                                               |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{organizationId, email}` unique, partial on `status: 'pending'` | One outstanding invitation per address; a re-invite refreshes the existing one instead of stacking duplicates. Accepted and revoked history is outside the constraint |
+| `{tokenHash}`                                                    | Lookup when an invitation link is opened                                                                                                                              |
+| `{organizationId, status, createdAt: -1}`                        | Pending invitations shown beside the members list                                                                                                                     |
+
 ### `website_checks`
 
 | Index                                | Purpose                             |

@@ -75,6 +75,7 @@ export class OrganizationGuard implements CanActivate {
     const organizationContext: OrganizationContext = {
       id: organization._id.toHexString(),
       objectId: organization._id,
+      name: organization.name,
       slug: organization.slug,
       plan: organization.plan,
       role: membership.role,

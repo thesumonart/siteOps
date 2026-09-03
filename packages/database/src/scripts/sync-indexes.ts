@@ -2,6 +2,7 @@
 import {
   AuditLogModel,
   IncidentModel,
+  InvitationModel,
   NotificationModel,
   NotificationSettingsModel,
   OrganizationMemberModel,
@@ -35,6 +36,8 @@ async function main(): Promise<void> {
     WebsiteModel,
     WebsiteCheckModel,
     IncidentModel,
+    InvitationModel,
+    InvitationModel,
     NotificationModel,
     NotificationSettingsModel,
     AuditLogModel,
