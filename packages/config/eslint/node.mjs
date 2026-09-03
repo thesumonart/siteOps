@@ -32,10 +32,12 @@ export const nodeConfig = tseslint.config(
     },
   },
   {
-    // The env modules are where raw configuration is read and validated, and
-    // operator-run scripts are their own entry points. Everything downstream of
-    // them must use the validated object.
-    files: ['**/env.ts', '**/env/*.ts', '**/scripts/**/*.ts'],
+    // The env modules are where raw configuration is read and validated,
+    // operator-run scripts are their own entry points, and a test-runner config
+    // supplies the environment that `env.ts` then validates — all three sit
+    // upstream of the validated object. Everything downstream of them must use
+    // it.
+    files: ['**/env.ts', '**/env/*.ts', '**/scripts/**/*.ts', '**/vitest.config.*'],
     rules: {
       'no-restricted-properties': 'off',
     },
