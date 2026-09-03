@@ -13,9 +13,18 @@ import { EmailModule } from './email/email.module.js';
 import { HealthModule } from './health/health.module.js';
 import { OrganizationGuard } from './organizations/organization.guard.js';
 import { OrganizationModule } from './organizations/organization.module.js';
+import { WebsiteModule } from './websites/website.module.js';
 
 @Module({
-  imports: [DatabaseModule, EmailModule, AuditModule, AuthModule, OrganizationModule, HealthModule],
+  imports: [
+    DatabaseModule,
+    EmailModule,
+    AuditModule,
+    AuthModule,
+    OrganizationModule,
+    WebsiteModule,
+    HealthModule,
+  ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
