@@ -16,11 +16,11 @@ No Kubernetes, no queue infrastructure, no service mesh. See
 ## Order
 
 1. Create the MongoDB Atlas cluster and get a connection string.
-2. Deploy the API. Note its public URL.
-3. Deploy the worker with the same database.
-4. Deploy the web app pointing at the API URL.
-5. Run the index sync.
-6. Verify health endpoints and a real sign-up.
+2. Run the index sync, before anything writes to the database.
+3. Deploy the API. Note its public URL.
+4. Deploy the worker with the same database.
+5. Deploy the web app pointing at the API URL.
+6. Verify: `indexes:verify`, both health endpoints, and a real sign-up.
 
 ## MongoDB Atlas
 
@@ -52,6 +52,16 @@ uniqueness the product depends on: a website could be monitored twice, an outage
 incidents, and one incident could send the same alert email repeatedly. Application code does not
 re-check any of that — the index _is_ the guarantee.
 
+Nothing else will tell you if the step is skipped. Every request still succeeds and every page
+still renders; only the guarantees quietly stop holding. So confirm it, read-only, after deploying:
+
+```bash
+MONGODB_URI="mongodb+srv://..." pnpm --filter @siteops/database indexes:verify
+```
+
+It names any missing index and exits non-zero. Indexes it does not recognise are reported but not
+treated as a failure — one added by hand while diagnosing a slow query is a normal thing to find.
+
 `MONGODB_AUTO_INDEX=true` runs the same sync at startup and is meant for development only. It does
 not use Mongoose's own `autoIndex`, which silently does nothing here: models are compiled when
 their module is imported, before the connection is opened, and command buffering is off, so the
@@ -72,10 +82,16 @@ It runs as the unprivileged `node` user, and neither process is wrapped in a she
 reaches it directly and the graceful-shutdown path runs.
 
 **Known issue — image size.** `better-auth` declares `next`, `react` and `vitest` as optional peer
-dependencies. pnpm resolves them from the workspace root, where the web app has them installed, so
-`pnpm deploy` faithfully copies the whole Next toolchain into the API's tree — several hundred
-megabytes the API never loads. The worker, which does not depend on Better Auth, deploys at about
-26 MB. Nothing is broken by this; it costs build time and registry storage.
+dependencies, for framework integrations SiteOps does not use. pnpm satisfies them from the web
+app's copies, so the resolution is baked into the lockfile and `pnpm deploy` faithfully copies the
+whole Next toolchain into the API's tree — several hundred megabytes the API never loads. The
+worker, which does not depend on Better Auth, deploys at about 26 MB.
+
+`resolvePeersFromWorkspaceRoot: false` does **not** fix this; it was tried. pnpm reads the setting,
+but it governs only the root package's own dependencies, and here the peer is satisfied from
+another workspace project. A real fix means either stopping the web app and the API sharing a
+lockfile, or an upstream change to Better Auth's peer declarations. Nothing is broken meanwhile —
+it costs build time and registry storage.
 
 ## API
 
@@ -181,6 +197,7 @@ strict third-party cookie policies.
 | Is the API healthy?    | `curl $API_URL/health`                                  |
 | Can it serve?          | `curl $API_URL/ready`                                   |
 | Is monitoring running? | `curl $WORKER_URL/ready` — check `lastTickAt` advances  |
+| Are the guarantees on? | `pnpm --filter @siteops/database indexes:verify`        |
 | Trace a failure        | Find `requestId` from the `X-Request-Id` header in logs |
 
 Logs are newline-delimited JSON in production. Events use stable dotted names

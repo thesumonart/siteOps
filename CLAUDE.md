@@ -61,6 +61,7 @@ pnpm format
 pnpm format:check
 pnpm docker:up      # local MongoDB replica set
 pnpm --filter @siteops/database indexes:sync
+pnpm --filter @siteops/database indexes:verify   # read-only; names what is missing
 ```
 
 ## Conventions

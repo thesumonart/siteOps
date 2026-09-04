@@ -29,22 +29,29 @@ export interface IndexSyncResult {
   readonly indexes: number;
 }
 
-export async function syncAllIndexes(): Promise<readonly IndexSyncResult[]> {
-  const models = [
-    OrganizationModel,
-    OrganizationMemberModel,
-    WebsiteModel,
-    WebsiteCheckModel,
-    IncidentModel,
-    InvitationModel,
-    NotificationModel,
-    NotificationSettingsModel,
-    AuditLogModel,
-  ];
+/**
+ * Every model whose indexes are managed here.
+ *
+ * Exported so `verify-indexes.ts` checks exactly the set that `syncAllIndexes`
+ * creates — a model added to one list and not the other would give a clean
+ * verification of a database missing an index.
+ */
+export const MANAGED_MODELS = [
+  OrganizationModel,
+  OrganizationMemberModel,
+  WebsiteModel,
+  WebsiteCheckModel,
+  IncidentModel,
+  InvitationModel,
+  NotificationModel,
+  NotificationSettingsModel,
+  AuditLogModel,
+] as const;
 
+export async function syncAllIndexes(): Promise<readonly IndexSyncResult[]> {
   const results: IndexSyncResult[] = [];
 
-  for (const model of models) {
+  for (const model of MANAGED_MODELS) {
     await model.syncIndexes();
     const indexes = await model.listIndexes();
     results.push({ collection: model.collection.collectionName, indexes: indexes.length });

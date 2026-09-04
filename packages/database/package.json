@@ -22,7 +22,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "indexes:sync": "tsx src/scripts/sync-indexes.ts"
+    "indexes:sync": "tsx src/scripts/sync-indexes.ts",
+    "indexes:verify": "tsx src/scripts/verify-indexes.ts"
   },
   "dependencies": {
     "@siteops/shared": "workspace:*",
